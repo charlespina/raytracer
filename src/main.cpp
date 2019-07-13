@@ -14,6 +14,66 @@
 #define RT_IMG_HEIGHT 200
 #define RT_IMG_CHANNELS 3
 
+struct hit_record {
+  float t;
+  vec3 p;
+  vec3 normal;
+};
+
+class hitable {
+public:
+  virtual bool hit(const ray& r, float t_min, float t_max, hit_record &record) const = 0;
+};
+
+class sphere : public hitable {
+public:
+  sphere() = default;
+  sphere(vec3 center, float r)
+  : _center(center)
+  , _radius(r)
+  {}
+
+  virtual bool hit(const ray& r, float tmin, float tmax, hit_record &record) const override;
+  
+  vec3 _center;
+  float _radius;
+};
+
+bool sphere::hit(const ray& r, float tmin, float tmax, hit_record &record) const {
+  vec3 oc = r.origin() - _center;
+  float a = dot(r.direction(), r.direction());
+  float b = 2.0f * dot(oc, r.direction());
+  float c = dot(oc, oc) - _radius * _radius;
+  float discriminant = b*b - a*c;
+
+  if (discriminant < 0) return false;
+
+  float t = (-b - sqrtf(discriminant)) / (2.0f * a);
+
+  t = 
+
+}
+
+class scene : public hitable {
+public:
+  virtual bool hit(const ray& r, float tmin, float tmax, hit_record &record) const override;
+  std::vector<std::shared_ptr<hitable>> geometries;
+};
+
+bool scene::hit(const ray& r, float t_min, float t_max, hit_record &record) const {
+  bool hit_anything = false;
+  float closest_so_far = t_max;
+  hit_record temp_record;
+  for (const auto &geom : geometries) {
+    if (geom->hit(r, t_min, closest_so_far, temp_record)) {
+      hit_anything = true;
+      closest_so_far = temp_record.t;
+      record = temp_record;
+    }
+  }
+  return hit_anything;
+}
+
 template<typename T>
 struct image {
   image(size_t width, size_t height) 
@@ -52,23 +112,52 @@ struct image {
   std::vector<T> _data;
 };
 
+float hit_sphere(const vec3 &center, float radius, const ray &r) {
+  vec3 oc = r.origin() - center;
+  float a = dot(r.direction(), r.direction());
+  float b = 2.0f * dot(oc, r.direction());
+  float c = dot(oc, oc) - radius * radius;
+  float discriminant = b*b - 4.0f*a*c;
+
+  if (discriminant < 0) return -1.0f;
+  return (-b - sqrtf(discriminant)) / (2.0f * a);
+}
+
+vec3 normal_to_color(const vec3 &n) {
+  return 0.5f * (n + vec3(1.0f, 1.0f, 1.0f));
+}
 
 vec3 color(const ray &r) {
+  vec3 sphere_pos(0, 0, -1);
+  float t = hit_sphere(sphere_pos, 0.5f, r);
+  if (t > 0.0f) {
+    vec3 N = unit_vector(r.point_at_parameter(t) - sphere_pos);
+
+    return normal_to_color(N);
+  }
   vec3 unit_direction = unit_vector(r.direction());
-  float t = 0.5f * (unit_direction.y() + 1.0f);
+  t = 0.5f * (unit_direction.y() + 1.0f);
   return (1.0f - t) * vec3(1.0, 1.0, 1.0) + t * vec3(0.5, 0.7f, 1.0f);
 }
 
 int main(char **argv) {
     image<float> img(RT_IMG_WIDTH, RT_IMG_HEIGHT);
 
-    vec3 v;
+    vec3 lower_left_corner(-2.0f, -1.0f, -1.0f);
+    vec3 horizontal(4.0, 0.0, 0.0);
+    vec3 vertical(0.0, 2.0, 0.0);
+    vec3 origin(0, 0, 0);
+
     for (size_t x = 0; x < img._width; x++) {
       for (size_t y = 0; y < img._height; y++) {
-        v.e[0] = (float)x / img._width;
-        v.e[1] = (float)y / img._height;
-        v.e[2] = 0;
-        img.set(x, img._height - y - 1, v);
+        float u = (float)x / img._width;
+        float v = (float)y / img._height;
+
+        ray r(origin, lower_left_corner + u*horizontal + v*vertical);
+        vec3 c = color(r);
+
+        // a little y-flip
+        img.set(x, img._height - y - 1, c);
       }
     }
 
