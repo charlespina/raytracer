@@ -13,6 +13,12 @@ namespace {
   inline vec3 roughness_lobe(float roughness) {
     return roughness * random_in_unit_sphere();
   }
+
+  float schlick(float cosine, float ior) {
+    float r0 = (1.0f - ior) / (1.0f + ior);
+    r0 = r0 * r0;
+    return r0 + (1.0f - r0) * powf((1.0f - cosine), 5.0f);
+  }
 } // internal namespace
 
 
@@ -29,18 +35,28 @@ bool Dielectric::scatter(const ray &iray, const HitRecord &hit, vec3 &attenuatio
   float ni_over_nt;
   attenuation = vec3(1.0, 1.0, 1.0);
   vec3 refracted;
+  float P_reflect;
+  float cosine;
   if (dot(iray.direction(), hit.normal) > 0) {
     outward_normal = -hit.normal;
     ni_over_nt = _ior;
+    cosine = _ior * dot(iray.direction(), hit.normal) / iray.direction().length();
   } else {
     outward_normal = hit.normal;
     ni_over_nt = 1.0f / _ior;
+    cosine = -dot(iray.direction(), hit.normal) / iray.direction().length();
   }
 
   if (refract(iray.direction(), outward_normal, ni_over_nt, refracted)) {
-    scattered = ray(hit.p, refracted + roughness_lobe(_roughness));
+    P_reflect = schlick(cosine, _ior);
   } else {
+    P_reflect = 1.0f;
+  }
+
+  if (random_number() < P_reflect) {
     scattered = ray(hit.p, reflected + roughness_lobe(_roughness));
+  } else {
+    scattered = ray(hit.p, refracted + roughness_lobe(_roughness)); 
   }
 
   return true;
