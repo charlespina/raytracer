@@ -19,7 +19,8 @@
 class vec3 {
 
 public:
-  vec3() {}
+  vec3() = default;
+  //vec3(const vec3 &v) { e[0] = v.e[0]; e[1] = v.e[1]; e[2] = v.e[2]; }
   vec3(float e0, float e1, float e2) { e[0] = e0; e[1] = e1; e[2] = e2; }
   inline float x() const { return e[0]; }
   inline float y() const { return e[1]; }
@@ -148,6 +149,10 @@ inline vec3& vec3::operator/=(const float t) {
 
 inline vec3 unit_vector(vec3 v) {
   return v / v.length();
+}
+
+inline vec3 reflect(const vec3 &v, const vec3 &n) {
+  return v - 2.0f * dot(v, n) * n;
 }
 
 #endif

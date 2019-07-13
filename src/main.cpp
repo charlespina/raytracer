@@ -1,160 +1,88 @@
 #include <iostream>
 #include <vector>
+#include <memory>
+#include <random>
 
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb/stb_image.h"
 #define STB_IMAGE_WRITE_IMPLEMENTATION
 #include "stb/stb_image_write.h"
 
-#include "raytracer/vec3.h"
+#include "raytracer/Camera.h"
+#include "raytracer/HitRecord.h"
+#include "raytracer/IHitable.h"
+#include "raytracer/Image.h"
+#include "raytracer/materials.h"
+#include "raytracer/random_numbers.h"
+#include "raytracer/Scene.h"
+#include "raytracer/Sphere.h"
 #include "raytracer/ray.h"
-
+#include "raytracer/vec3.h"
 
 #define RT_IMG_WIDTH 400
 #define RT_IMG_HEIGHT 200
-#define RT_IMG_CHANNELS 3
-
-struct hit_record {
-  float t;
-  vec3 p;
-  vec3 normal;
-};
-
-class hitable {
-public:
-  virtual bool hit(const ray& r, float t_min, float t_max, hit_record &record) const = 0;
-};
-
-class sphere : public hitable {
-public:
-  sphere() = default;
-  sphere(vec3 center, float r)
-  : _center(center)
-  , _radius(r)
-  {}
-
-  virtual bool hit(const ray& r, float tmin, float tmax, hit_record &record) const override;
-  
-  vec3 _center;
-  float _radius;
-};
-
-bool sphere::hit(const ray& r, float tmin, float tmax, hit_record &record) const {
-  vec3 oc = r.origin() - _center;
-  float a = dot(r.direction(), r.direction());
-  float b = 2.0f * dot(oc, r.direction());
-  float c = dot(oc, oc) - _radius * _radius;
-  float discriminant = b*b - a*c;
-
-  if (discriminant < 0) return false;
-
-  float t = (-b - sqrtf(discriminant)) / (2.0f * a);
-
-  t = 
-
-}
-
-class scene : public hitable {
-public:
-  virtual bool hit(const ray& r, float tmin, float tmax, hit_record &record) const override;
-  std::vector<std::shared_ptr<hitable>> geometries;
-};
-
-bool scene::hit(const ray& r, float t_min, float t_max, hit_record &record) const {
-  bool hit_anything = false;
-  float closest_so_far = t_max;
-  hit_record temp_record;
-  for (const auto &geom : geometries) {
-    if (geom->hit(r, t_min, closest_so_far, temp_record)) {
-      hit_anything = true;
-      closest_so_far = temp_record.t;
-      record = temp_record;
-    }
-  }
-  return hit_anything;
-}
-
-template<typename T>
-struct image {
-  image(size_t width, size_t height) 
-    : _width(width)
-    , _height(height)
-    , _data(RT_IMG_CHANNELS * width * height) 
-  {}
-
-  void set(size_t x, size_t y, const vec3 &v) {
-    size_t px = index(x, y);
-    _data[px + 0] = v.r();
-    _data[px + 1] = v.g();
-    _data[px + 2] = v.b();
-  }
-
-  void set(size_t x, size_t y, T r, T g, T b) {
-    size_t px = index(x, y);
-    _data[px + 0] = r;
-    _data[px + 1] = g;
-    _data[px + 2] = b;
-  }
-
-  void get(size_t x, size_t y, vec3 &v) {
-    size_t px = index(x, y);
-    v.e[0] = _data[px + 0];
-    v.e[1] = _data[px + 1];
-    v.e[2] = _data[px + 2];
-  }
-
-  size_t image::index(size_t x, size_t y) {
-    return  x * RT_IMG_CHANNELS + y * _width * RT_IMG_CHANNELS;
-  }
-
-  size_t _width;
-  size_t _height;
-  std::vector<T> _data;
-};
-
-float hit_sphere(const vec3 &center, float radius, const ray &r) {
-  vec3 oc = r.origin() - center;
-  float a = dot(r.direction(), r.direction());
-  float b = 2.0f * dot(oc, r.direction());
-  float c = dot(oc, oc) - radius * radius;
-  float discriminant = b*b - 4.0f*a*c;
-
-  if (discriminant < 0) return -1.0f;
-  return (-b - sqrtf(discriminant)) / (2.0f * a);
-}
+#define RT_MAX_BOUNCES 50
+#define RT_NUM_SAMPLES 100
 
 vec3 normal_to_color(const vec3 &n) {
   return 0.5f * (n + vec3(1.0f, 1.0f, 1.0f));
 }
 
-vec3 color(const ray &r) {
-  vec3 sphere_pos(0, 0, -1);
-  float t = hit_sphere(sphere_pos, 0.5f, r);
-  if (t > 0.0f) {
-    vec3 N = unit_vector(r.point_at_parameter(t) - sphere_pos);
-
-    return normal_to_color(N);
+vec3 color(const ray &r, Scene &scn, size_t depth) {
+  HitRecord record;
+  if (scn.hit(r, 0.001f, std::numeric_limits<float>::max(), record)) {
+    ray scattered;
+    vec3 attenuation;
+    if (depth < RT_MAX_BOUNCES && record.material->scatter(r, record, attenuation, scattered)) {
+      return attenuation * color(scattered, scn, depth+1);
+    } else {
+      return vec3(0, 0, 0);
+    }
+    // normal_to_color(record.normal);
+  } else {
+    vec3 unit_direction = unit_vector(r.direction());
+    float t = 0.5f * (unit_direction.y() + 1.0f);
+    return (1.0f - t) * vec3(1.0f, 1.0f, 1.0f) + t * vec3(0.5f, 0.7f, 1.0f);
   }
-  vec3 unit_direction = unit_vector(r.direction());
-  t = 0.5f * (unit_direction.y() + 1.0f);
-  return (1.0f - t) * vec3(1.0, 1.0, 1.0) + t * vec3(0.5, 0.7f, 1.0f);
 }
 
-int main(char **argv) {
-    image<float> img(RT_IMG_WIDTH, RT_IMG_HEIGHT);
-
-    vec3 lower_left_corner(-2.0f, -1.0f, -1.0f);
-    vec3 horizontal(4.0, 0.0, 0.0);
-    vec3 vertical(0.0, 2.0, 0.0);
-    vec3 origin(0, 0, 0);
+int main(int argc, char **argv) {
+    Image<float> img(RT_IMG_WIDTH, RT_IMG_HEIGHT);
+  
+    Scene world;
+    Camera camera;
+  
+    world._geometries.push_back(std::make_shared<Sphere>(
+      vec3(0.0f, 0.0f, -1.0f), 
+      0.5f,
+      std::make_shared<Lambertian>(vec3(0.8, 0.3, 0.3))
+    ));
+    world._geometries.push_back(std::make_shared<Sphere>(vec3(0.0f, -100.5f, -1.0f),
+      100.0f,
+      std::make_shared<Lambertian>(vec3(0.8, 0.8, 0.0))
+    ));
+    world._geometries.push_back(std::make_shared<Sphere>(vec3(1.0f, 0.0f, -1.0f),
+      0.5f,
+      std::make_shared<Metal>(vec3(0.8, 0.6, 0.2), 1.0f)
+    ));
+    world._geometries.push_back(std::make_shared<Sphere>(vec3(-1.0f, 0.0f, -1.0f),
+      0.5f,
+      std::make_shared<Dielectric>(0.3f, 1.5f)
+    ));
 
     for (size_t x = 0; x < img._width; x++) {
       for (size_t y = 0; y < img._height; y++) {
-        float u = (float)x / img._width;
-        float v = (float)y / img._height;
-
-        ray r(origin, lower_left_corner + u*horizontal + v*vertical);
-        vec3 c = color(r);
+        vec3 c(0, 0, 0);
+        
+        for (size_t sample=0; sample < RT_NUM_SAMPLES; sample++) {
+          float u = float(x + random_number()) / float(img._width);
+          float v = float(y + random_number()) / float(img._height);
+        
+          ray r = camera.get_ray(u, v);
+          c += color(r, world, 0);
+        }
+        
+        c /= float(RT_NUM_SAMPLES);
 
         // a little y-flip
         img.set(x, img._height - y - 1, c);
@@ -162,7 +90,7 @@ int main(char **argv) {
     }
 
     // convert to output format
-    image<uint8_t> img_out(img._width, img._height);
+    Image<uint8_t> img_out(img._width, img._height);
     vec3 v_out;
     for (size_t x = 0; x < img._width; x++) {
       for (size_t y = 0; y < img._height; y++) {

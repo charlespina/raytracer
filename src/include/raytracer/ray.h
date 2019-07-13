@@ -1,5 +1,6 @@
 #ifndef RT_RAY_H
 #define RT_RAY_H
+
 #include "raytracer/vec3.h"
 
 struct ray {
