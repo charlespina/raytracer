@@ -11,7 +11,7 @@ namespace {
   }
 
   inline vec3 roughness_lobe(float roughness) {
-    return roughness * random_in_unit_sphere();
+    return roughness * roughness * random_in_unit_sphere();
   }
 
   float schlick(float cosine, float ior) {
@@ -23,9 +23,20 @@ namespace {
 
 
 bool Lambertian::scatter(const ray &iray, const HitRecord &hit, vec3 &attenuation, ray &scattered) const {
-  vec3 target = hit.p + hit.normal + random_in_unit_sphere();
-  scattered = ray(hit.p, target - hit.p);
-  attenuation = _albedo;
+  float ndv = dot(iray.direction(), hit.normal);
+  float f0 = 0.08f;
+  
+  float P_reflect = schlick(abs(ndv), 1.0f + f0);
+
+  if (random_number() < P_reflect) {
+    vec3 reflected = reflect(iray.direction(), hit.normal);
+    scattered = ray(hit.p, reflected, iray.time());
+    attenuation = vec3(1.0f, 1.0f, 1.0f); // _albedo;
+  } else {
+    // diffuse scatter - scatter in random direction
+    scattered = ray(hit.p, hit.normal + random_in_unit_sphere(), iray.time());
+    attenuation = _albedo;
+  }
   return true;
 }
 
@@ -54,17 +65,29 @@ bool Dielectric::scatter(const ray &iray, const HitRecord &hit, vec3 &attenuatio
   }
 
   if (random_number() < P_reflect) {
-    scattered = ray(hit.p, reflected + roughness_lobe(_roughness));
+    scattered = ray(hit.p, reflected + roughness_lobe(_roughness), iray.time());
   } else {
-    scattered = ray(hit.p, refracted + roughness_lobe(_roughness)); 
+    scattered = ray(hit.p, refracted + roughness_lobe(_roughness), iray.time()); 
   }
 
   return true;
 }
 
+std::shared_ptr<Lambertian> create_lambert_material() {
+  return std::make_shared<Lambertian>(vec3(0.5f, 0.5f, 0.5f));
+}
+
+std::shared_ptr<Metal> create_mirror_material() {
+  return std::make_shared<Metal>(vec3(1.0f, 1.0f, 1.0f), 0.0f);
+}
+
+std::shared_ptr<Dielectric> create_lens_material() {
+  return std::make_shared<Dielectric>(0.0f, 1.0f);
+}
+
 bool Metal::scatter(const ray &iray, const HitRecord &hit, vec3 &attenuation, ray &scattered) const {
   vec3 reflected = reflect(unit_vector(iray.direction()), hit.normal);
-  scattered = ray(hit.p, reflected + roughness_lobe(_roughness));
+  scattered = ray(hit.p, reflected + roughness_lobe(_roughness), iray.time());
   attenuation = _color;
   return ((dot(scattered.direction(), hit.normal)) > 0);
 }

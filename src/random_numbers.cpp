@@ -14,7 +14,7 @@ namespace {
         return distribution(generator);
     }
 
-    private:
+  private:
     std::mt19937 generator;
     std::uniform_real_distribution<float> distribution;
   };

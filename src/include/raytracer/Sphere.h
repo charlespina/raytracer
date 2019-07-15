@@ -13,13 +13,15 @@
 class Sphere : public IHitable {
 public:
   Sphere() = delete;
-  Sphere(const vec3 &center, float r, std::shared_ptr<Material> mat);
+  Sphere(const vec3 &center, float r, std::shared_ptr<Material> mat, vec3 velocity=vec3(0,0,0));
   virtual ~Sphere() {};
   virtual bool hit(const ray& r, float tmin, float tmax, HitRecord &record) const override;
+  vec3 center(float t) const;
   
 public:
   vec3 _center;
   float _radius;
+  vec3 _velocity;
   std::shared_ptr<Material> _material;
 };
 

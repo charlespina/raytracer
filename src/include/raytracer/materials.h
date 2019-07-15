@@ -2,9 +2,9 @@
 #define RT_MATERIALS_H
 
 #include "raytracer/HitRecord.h"
-#include "raytracer/materials.h"
 #include "raytracer/random_numbers.h"
 #include "raytracer/ray.h"
+#include <memory>
 
 class Material {
 public:
@@ -41,5 +41,9 @@ public:
   vec3 _color;
   float _roughness;
 };
+
+std::shared_ptr<Metal> create_mirror_material();
+std::shared_ptr<Dielectric> create_lens_material();
+std::shared_ptr<Lambertian> create_lambert_material();
 
 #endif

@@ -13,16 +13,19 @@
 #include "raytracer/IHitable.h"
 #include "raytracer/Image.h"
 #include "raytracer/materials.h"
+#include "raytracer/Plane.h"
 #include "raytracer/random_numbers.h"
 #include "raytracer/Scene.h"
 #include "raytracer/Sphere.h"
 #include "raytracer/ray.h"
 #include "raytracer/vec3.h"
 
-#define RT_IMG_WIDTH 400
-#define RT_IMG_HEIGHT 200
-#define RT_MAX_BOUNCES 50
-#define RT_NUM_SAMPLES 10
+struct Config {
+  size_t image_width = 300;
+  size_t image_height = 300;
+  size_t max_bounces = 50;
+  size_t samples_per_pixel = 10;
+} config;
 
 vec3 normal_to_color(const vec3 &n) {
   return 0.5f * (n + vec3(1.0f, 1.0f, 1.0f));
@@ -33,12 +36,11 @@ vec3 raycast(const ray &r, Scene &scn, size_t depth) {
   if (scn.hit(r, 0.001f, std::numeric_limits<float>::max(), record)) {
     ray scattered;
     vec3 attenuation;
-    if (depth < RT_MAX_BOUNCES && record.material->scatter(r, record, attenuation, scattered)) {
+    if (depth < config.max_bounces && record.material->scatter(r, record, attenuation, scattered)) {
       return attenuation * raycast(scattered, scn, depth+1);
     } else {
       return vec3(0, 0, 0);
     }
-    // normal_to_color(record.normal);
   } else {
     vec3 unit_direction = unit_vector(r.direction());
     float t = 0.5f * (unit_direction.y() + 1.0f);
@@ -49,55 +51,100 @@ vec3 raycast(const ray &r, Scene &scn, size_t depth) {
 std::shared_ptr<Scene> create_scene() {
   auto scene = std::make_shared<Scene>();
 
-  float sphere_radius = 0.5f;
-
   // ground "plane"
-  scene->_geometries.push_back(std::make_shared<Sphere>(vec3(0.0f, -100.5f, -1.0),
-    100.0,
-    std::make_shared<Lambertian>(vec3(0.8, 0.8, 0.0))
+  scene->_geometries.push_back(std::make_shared<Plane>(vec3(0.0f, 0.0f, 0.0f),
+    vec3(0.0f, 1.0f, 0.0f),
+    std::make_shared<Lambertian>(vec3(0.2, 0.6, 0.4))
   ));
 
-  scene->_geometries.push_back(std::make_shared<Sphere>(vec3(0.0, 0.0f, -1.0f),
-    sphere_radius,
-    std::make_shared<Metal>(vec3(0.8, 0.6, 0.2), 1.0f)
-  ));
-  scene->_geometries.push_back(std::make_shared<Sphere>(vec3(1.0, 0.0f, -1.0f),
-    sphere_radius,
-    std::make_shared<Dielectric>(0.3f, 1.5f)
-  ));
-  scene->_geometries.push_back(std::make_shared<Sphere>(
-    vec3(-1.0f, 0.0f, -1.0f), 
-    sphere_radius,
-    std::make_shared<Lambertian>(vec3(0.8, 0.3, 0.3))
-  ));
+  // hero spheres
+  int variations = 3;
+  float sphere_radius = 0.5f;
+  for (int i = 0; i < variations; i++) {
+    float t = float(i)/(variations-1);
+    float y = 1.33f * sphere_radius * variations * t + sphere_radius;
+
+    auto mirror = create_mirror_material();
+    mirror->_roughness = t;
+    scene->_geometries.push_back(std::make_shared<Sphere>(vec3(0.0, y, 0.0f),
+      sphere_radius,
+      mirror
+    ));
+
+    auto lambert = create_lambert_material();
+    scene->_geometries.push_back(std::make_shared<Sphere>(vec3(1.0, y, 0.0f),
+      sphere_radius,
+      lambert
+    ));
+
+    auto lens = create_lens_material();
+    lens->_roughness = float(i)/(variations-1);
+    scene->_geometries.push_back(std::make_shared<Sphere>(
+      vec3(-1.0f, y, 0.0f), 
+      sphere_radius,
+      lens
+    ));
+  }
+
+  // litter spheres
+  {
+    int num_spheres = 100;
+    float distance = 5.0f;
+    float litter_radius = 0.08f;
+    float max_velocity = 0.3f;
+    for (int i = 0; i < num_spheres; i++) {
+      vec3 center(0, litter_radius, -distance/2.0f);
+
+      vec3 offset(2.0f * distance * (-0.5 + random_number()),
+        0.0f,
+        2.0f * distance * (-0.5f + random_number()));
+      
+      float P_bouncing = 0.5f;
+      float velocity_y = random_number() < P_bouncing? max_velocity * random_number() : 0.0f;
+
+      auto litter_mat = std::make_shared<Lambertian>(vec3(random_number(), random_number(), random_number()));
+      auto sphere = std::make_shared<Sphere>(
+        center + offset,
+        litter_radius,
+        litter_mat,
+        vec3(0.0, velocity_y, 0.0)
+      );
+      scene->_geometries.push_back(sphere);
+    }
+  }
 
   return scene;
 }
 
 int main(int argc, char **argv) {
-    Image<float> img(RT_IMG_WIDTH, RT_IMG_HEIGHT);
+    Image<float> img(config.image_width, config.image_height);
     
-    Camera camera({ 0, 0, 0 },
-      {0, 0, -1},
-      {0, 1, 0},
-      90.0f,
-      float(img._width)/float(img._height));
+    Camera camera({ 0, 1.5f, 2.75 }, // pos
+      {0, 1.5f, 0}, // target
+      {0, 1, 0}, // up
+      70.0f, // vfov
+      float(img._width)/float(img._height), // aspect
+      0.3f, // aperture
+      2.75f // focus dist
+     );
     
     auto scene = create_scene();
+    float t_begin = 0.0f;
+    float t_end = 1.0f;
   
     for (size_t x = 0; x < img._width; x++) {
       for (size_t y = 0; y < img._height; y++) {
         vec3 color(0, 0, 0);
         
-        for (size_t sample=0; sample < RT_NUM_SAMPLES; sample++) {
+        for (size_t sample=0; sample < config.samples_per_pixel; sample++) {
           float u = float(x + random_number()) / float(img._width);
           float v = float(y + random_number()) / float(img._height);
         
-          ray r = camera.get_ray(u, v);
+          ray r = camera.get_ray(u, v, t_begin, t_end);
           color += raycast(r, *scene.get(), 0);
         }
         
-        color /= float(RT_NUM_SAMPLES);
+        color /= float(config.samples_per_pixel);
 
         // a little y-flip
         img.set(x, img._height - y - 1, color);
@@ -134,7 +181,7 @@ int main(int argc, char **argv) {
       img_out._data.data(),
       img_out._width * RT_IMG_CHANNELS);
     
-    std::cout << "OK\n";
+    std::cout << "OK" << std::endl;
 
     return 0;
 }

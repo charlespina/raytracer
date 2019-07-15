@@ -1,14 +1,20 @@
 #include "raytracer/Sphere.h"
 
-Sphere::Sphere(const vec3 &center, float r, std::shared_ptr<Material> mat)
+Sphere::Sphere(const vec3 &center, float r, std::shared_ptr<Material> mat, vec3 velocity)
 : _center(center)
 , _radius(r)
+, _velocity(velocity)
 , _material(mat)
 {
 }
 
+vec3 Sphere::center(float t) const {
+  return _center + _velocity * t;
+}
+
 bool Sphere::hit(const ray& r, float t_min, float t_max, HitRecord &record) const {
-  vec3 oc = r.origin() - _center;
+  vec3 p_center = center(r.time());
+  vec3 oc = r.origin() - p_center;
   float a = dot(r.direction(), r.direction());
   float b = 2.0f * dot(oc, r.direction());
   float c = dot(oc, oc) - _radius * _radius;
@@ -30,7 +36,7 @@ bool Sphere::hit(const ray& r, float t_min, float t_max, HitRecord &record) cons
   if (t > 0) {
     record.t = t;
     record.p = r.point_at_parameter(t);
-    record.normal = (record.p - _center) / _radius;
+    record.normal = (record.p - p_center) / _radius;
     record.material = _material.get();
     return true;
   }

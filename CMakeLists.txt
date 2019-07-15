@@ -15,5 +15,6 @@ add_executable (Raytracer
     src/Camera.cpp
     src/materials.cpp
     src/random_numbers.cpp
+    src/Plane.cpp
     src/Sphere.cpp
     src/main.cpp)
