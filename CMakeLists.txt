@@ -12,6 +12,8 @@ include_directories (
 # targets
 add_executable (Raytracer 
 
+    src/AxisAlignedBoundingBox.cpp
+    src/BvhNode.cpp
     src/Camera.cpp
     src/materials.cpp
     src/random_numbers.cpp

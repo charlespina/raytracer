@@ -16,6 +16,7 @@ public:
   Sphere(const vec3 &center, float r, std::shared_ptr<Material> mat, vec3 velocity=vec3(0,0,0));
   virtual ~Sphere() {};
   virtual bool hit(const ray& r, float tmin, float tmax, HitRecord &record) const override;
+  virtual bool bounding_box(float t0, float t1, AxisAlignedBoundingBox& aabb) const override;
   vec3 center(float t) const;
   
 public:

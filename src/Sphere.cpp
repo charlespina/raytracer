@@ -8,6 +8,13 @@ Sphere::Sphere(const vec3 &center, float r, std::shared_ptr<Material> mat, vec3 
 {
 }
 
+bool Sphere::bounding_box(float t0, float t1, AxisAlignedBoundingBox& aabb) const {
+  auto b_t0 = AxisAlignedBoundingBox(center(t0) - vec3(_radius), center(t0) + vec3(_radius));
+  auto b_t1 = AxisAlignedBoundingBox(center(t1) - vec3(_radius), center(t1) + vec3(_radius));
+  aabb = b_t0.combine(b_t1);
+  return true;
+}
+
 vec3 Sphere::center(float t) const {
   return _center + _velocity * t;
 }

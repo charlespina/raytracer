@@ -7,6 +7,7 @@
 class Scene : public IHitable {
 public:
   virtual bool hit(const ray& r, float tmin, float tmax, HitRecord &record) const override;
+  virtual bool bounding_box(float t0, float t1, AxisAlignedBoundingBox& aabb) const override;
   virtual ~Scene() {}
   
 public:
@@ -25,6 +26,24 @@ bool Scene::hit(const ray& r, float t_min, float t_max, HitRecord &record) const
     }
   }
   return hit_anything;
+}
+
+bool Scene::bounding_box(float t0, float t1, AxisAlignedBoundingBox& aabb) const {
+  if (_geometries.empty()) return false;
+
+  AxisAlignedBoundingBox temp_aabb;
+  if (!_geometries[0]->bounding_box(t0, t1, temp_aabb)) {
+    return false;
+  }
+
+  aabb = temp_aabb;
+  bool all_valid = std::all_of(_geometries.begin(), _geometries.end(), [t0, t1, &temp_aabb, &aabb](const auto &geom) -> bool {
+    bool result = geom->bounding_box(t0, t1, temp_aabb);
+    if (result) aabb.combine(temp_aabb);
+    return result;
+  });
+
+  return all_valid;
 }
 
 #endif

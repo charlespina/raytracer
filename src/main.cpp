@@ -8,6 +8,7 @@
 #define STB_IMAGE_WRITE_IMPLEMENTATION
 #include "stb/stb_image_write.h"
 
+#include "raytracer/BvhNode.h"
 #include "raytracer/Camera.h"
 #include "raytracer/HitRecord.h"
 #include "raytracer/IHitable.h"
@@ -20,6 +21,7 @@
 #include "raytracer/ray.h"
 #include "raytracer/vec3.h"
 
+
 struct Config {
   size_t image_width = 300;
   size_t image_height = 300;
@@ -31,13 +33,13 @@ vec3 normal_to_color(const vec3 &n) {
   return 0.5f * (n + vec3(1.0f, 1.0f, 1.0f));
 }
 
-vec3 raycast(const ray &r, Scene &scn, size_t depth) {
+vec3 raycast(const ray &r, IHitable &hitable, size_t depth) {
   HitRecord record;
-  if (scn.hit(r, 0.001f, std::numeric_limits<float>::max(), record)) {
+  if (hitable.hit(r, 0.001f, std::numeric_limits<float>::max(), record)) {
     ray scattered;
     vec3 attenuation;
     if (depth < config.max_bounces && record.material->scatter(r, record, attenuation, scattered)) {
-      return attenuation * raycast(scattered, scn, depth+1);
+      return attenuation * raycast(scattered, hitable, depth+1);
     } else {
       return vec3(0, 0, 0);
     }
@@ -46,6 +48,11 @@ vec3 raycast(const ray &r, Scene &scn, size_t depth) {
     float t = 0.5f * (unit_direction.y() + 1.0f);
     return (1.0f - t) * vec3(1.0f, 1.0f, 1.0f) + t * vec3(0.5f, 0.7f, 1.0f);
   }
+}
+
+std::shared_ptr<BvhNode> build_bvh(std::vector<std::shared_ptr<IHitable> > geoms, float t0, float t1) {
+  auto copied_geom_list = geoms;
+  return std::make_shared<BvhNode>(copied_geom_list.begin(), copied_geom_list.end(), t0, t1);
 }
 
 std::shared_ptr<Scene> create_scene() {
@@ -131,6 +138,7 @@ int main(int argc, char **argv) {
     auto scene = create_scene();
     float t_begin = 0.0f;
     float t_end = 1.0f;
+    auto bvh = scene; // build_bvh(scene->_geometries, t_begin, t_end);
   
     for (size_t x = 0; x < img._width; x++) {
       for (size_t y = 0; y < img._height; y++) {
@@ -141,7 +149,7 @@ int main(int argc, char **argv) {
           float v = float(y + random_number()) / float(img._height);
         
           ray r = camera.get_ray(u, v, t_begin, t_end);
-          color += raycast(r, *scene.get(), 0);
+          color += raycast(r, *bvh.get(), 0);
         }
         
         color /= float(config.samples_per_pixel);
