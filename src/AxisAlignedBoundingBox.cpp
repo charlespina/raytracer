@@ -1,5 +1,13 @@
 #include "raytracer/AxisAlignedBoundingBox.h"
 
+float ffmin(float a, float b) {
+  return a < b? a : b;
+}
+
+float ffmax(float a, float b) {
+  return a > b? a : b;
+}
+
 AxisAlignedBoundingBox::AxisAlignedBoundingBox(const vec3 &imin, const vec3 &imax) 
 : _min(imin)
 , _max(imax)
@@ -22,6 +30,25 @@ AxisAlignedBoundingBox& AxisAlignedBoundingBox::combine(const AxisAlignedBoundin
 
 bool AxisAlignedBoundingBox::hit(const ray& r, float tmin, float tmax) const {
   for (int a=0; a<3; a++) {
+    float t0 = std::min(
+      (_min[a] - r.origin()[a]) / r.direction()[a],
+      (_max[a] - r.origin()[a]) / r.direction()[a]
+    );
+
+    float t1 = std::min(
+      (_min[a] - r.origin()[a]) / r.direction()[a],
+      (_max[a] - r.origin()[a]) / r.direction()[a]
+    );
+
+    tmin = std::max(t0, tmin);
+    tmax = std::min(t1, tmax);
+    if (tmax <= tmin)
+      return false;
+  }
+
+  return true;
+  /*
+  for (int a=0; a<3; a++) {
     float inv_d = 1.0f / r.direction()[a];
     float t0 = (_min[a] - r.origin()[a]) * inv_d;
     float t1 = (_max[a] - r.origin()[a]) * inv_d;
@@ -32,6 +59,7 @@ bool AxisAlignedBoundingBox::hit(const ray& r, float tmin, float tmax) const {
     if (tmax <= tmin)
       return false;
   }
+  */
 
   return true;
 }

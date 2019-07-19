@@ -59,8 +59,14 @@ std::shared_ptr<Scene> create_scene() {
   auto scene = std::make_shared<Scene>();
 
   // ground "plane"
+  /*
   scene->_geometries.push_back(std::make_shared<Plane>(vec3(0.0f, 0.0f, 0.0f),
     vec3(0.0f, 1.0f, 0.0f),
+    std::make_shared<Lambertian>(vec3(0.2, 0.6, 0.4))
+  ));
+  */
+  scene->_geometries.push_back(std::make_shared<Sphere>(vec3(0.0f, -100.0f, 0.0f),
+    100.0f,
     std::make_shared<Lambertian>(vec3(0.2, 0.6, 0.4))
   ));
 
@@ -137,8 +143,8 @@ int main(int argc, char **argv) {
     
     auto scene = create_scene();
     float t_begin = 0.0f;
-    float t_end = 1.0f;
-    auto bvh = scene; // build_bvh(scene->_geometries, t_begin, t_end);
+    float t_end = 0.0f;
+    auto bvh = build_bvh(scene->_geometries, t_begin, t_end);
   
     for (size_t x = 0; x < img._width; x++) {
       for (size_t y = 0; y < img._height; y++) {
