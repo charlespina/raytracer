@@ -6,7 +6,7 @@
 
 class Scene : public IHitable {
 public:
-  virtual bool hit(const ray& r, float tmin, float tmax, HitRecord &record) const override;
+  virtual bool hit(const Ray& r, float tmin, float tmax, HitRecord &record) const override;
   virtual bool bounding_box(float t0, float t1, AxisAlignedBoundingBox& aabb) const override;
   virtual ~Scene() {}
   
@@ -14,7 +14,7 @@ public:
   std::vector<std::shared_ptr<IHitable> > _geometries;
 };
 
-bool Scene::hit(const ray& r, float t_min, float t_max, HitRecord &record) const {
+bool Scene::hit(const Ray& r, float t_min, float t_max, HitRecord &record) const {
   bool hit_anything = false;
   float closest_so_far = t_max;
   HitRecord temp_record;

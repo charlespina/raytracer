@@ -1,12 +1,12 @@
 #ifndef RT_RANDOMNUMBERGENERATOR_H
 #define RT_RANDOMNUMBERGENERATOR_H
 
-#include "raytracer/vec3.h"
+#include "raytracer/Vec3.h"
 
 float random_number();
 
-vec3 random_in_unit_sphere();
+Vec3 random_in_unit_sphere();
 
-vec3 random_in_unit_disk();
+Vec3 random_in_unit_disk();
 
 #endif

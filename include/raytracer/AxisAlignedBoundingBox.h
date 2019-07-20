@@ -1,23 +1,23 @@
 #ifndef RT_AXISALIGNEDBOUNDINGBOX_H
 #define RT_AXISALIGNEDBOUNDINGBOX_H
 
-#include "raytracer/vec3.h"
-#include "raytracer/ray.h"
+#include "raytracer/Vec3.h"
+#include "raytracer/Ray.h"
 
 class AxisAlignedBoundingBox {
 public:
   AxisAlignedBoundingBox() {}
-  AxisAlignedBoundingBox(const vec3 &imin, const vec3 &imax);
-  const vec3 &min() const { return _min; }
-  const vec3 &max() const { return _max; }
+  AxisAlignedBoundingBox(const Vec3 &imin, const Vec3 &imax);
+  const Vec3 &min() const { return _min; }
+  const Vec3 &max() const { return _max; }
 
-  bool hit(const ray& r, float tmin, float tmax) const;
+  bool hit(const Ray& r, float tmin, float tmax) const;
 
   AxisAlignedBoundingBox& combine(const AxisAlignedBoundingBox &aabb);
 
 protected:
-  vec3 _min;
-  vec3 _max;
+  Vec3 _min;
+  Vec3 _max;
 };
 
 #endif // header guard

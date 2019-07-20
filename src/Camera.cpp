@@ -3,7 +3,7 @@
 
 #define PI 3.14159265358979323846f
 
-Camera::Camera(vec3 position, vec3 target, vec3 vup, 
+Camera::Camera(Vec3 position, Vec3 target, Vec3 vup, 
   float vfov, float aspect, float aperture, float focus_distance)
 : _vertical_fov(vfov)
 , _aspect(aspect)
@@ -23,9 +23,9 @@ Camera::Camera(vec3 position, vec3 target, vec3 vup,
   _vertical = 2.0f * half_height * focus_distance * _up;
 }
 
-ray Camera::get_ray(float s, float t, float time_begin, float time_end) {
-  vec3 rd = _lens_radius * random_in_unit_disk();
-  vec3 offset = _right * rd.x() + _up * rd.y();
+Ray Camera::get_ray(float s, float t, float time_begin, float time_end) {
+  Vec3 rd = _lens_radius * random_in_unit_disk();
+  Vec3 offset = _right * rd.x() + _up * rd.y();
   float time = time_begin + random_number() * (time_end - time_begin);
-  return ray(_origin + offset, _lower_left_corner + s * _horizontal + t * _vertical - offset, time);
+  return Ray(_origin + offset, _lower_left_corner + s * _horizontal + t * _vertical - offset, time);
 }

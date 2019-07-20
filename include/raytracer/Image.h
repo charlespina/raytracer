@@ -13,7 +13,7 @@ struct Image {
     , _data(RT_IMG_CHANNELS * width * height) 
   {}
 
-  void set(size_t x, size_t y, const vec3 &v) {
+  void set(size_t x, size_t y, const Vec3 &v) {
     size_t px = index(x, y);
     _data[px + 0] = v.r();
     _data[px + 1] = v.g();
@@ -27,7 +27,7 @@ struct Image {
     _data[px + 2] = b;
   }
 
-  void get(size_t x, size_t y, vec3 &v) {
+  void get(size_t x, size_t y, Vec3 &v) {
     size_t px = index(x, y);
     v.e[0] = _data[px + 0];
     v.e[1] = _data[px + 1];

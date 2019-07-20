@@ -11,7 +11,7 @@ public:
   BvhNode() {}
   BvhNode(iterator_t list_begin, iterator_t list_end, float t0, float t1);
 
-  virtual bool hit(const ray& r, float t_min, float t_max, HitRecord &record) const;
+  virtual bool hit(const Ray& r, float t_min, float t_max, HitRecord &record) const;
   virtual bool bounding_box(float t0, float t1, AxisAlignedBoundingBox& aabb) const;
 
 private:

@@ -42,7 +42,7 @@ BvhNode::BvhNode(BvhNode::iterator_t list_begin, BvhNode::iterator_t list_end, f
   _aabb = box_left.combine(box_right);
 }
 
-bool BvhNode::hit(const ray& r, float t_min, float t_max, HitRecord &record) const {
+bool BvhNode::hit(const Ray& r, float t_min, float t_max, HitRecord &record) const {
   if (!_aabb.hit(r, t_min, t_max)) return false;
 
   HitRecord left_hit, right_hit;

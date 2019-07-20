@@ -3,27 +3,27 @@
 
 #include "raytracer/HitRecord.h"
 #include "raytracer/random_numbers.h"
-#include "raytracer/ray.h"
+#include "raytracer/Ray.h"
 #include <memory>
 
 class Material {
 public:
-  virtual bool scatter(const ray &iray, const HitRecord &hit, vec3 &atten, ray &scattered) const = 0;
+  virtual bool scatter(const Ray &iray, const HitRecord &hit, Vec3 &atten, Ray &scattered) const = 0;
 };
 
 class Lambertian : public Material {
 public:
-  Lambertian(const vec3 &albedo) : _albedo(albedo) {}
-  virtual bool scatter(const ray &iray, const HitRecord &hit, vec3 &attenuation, ray &scattered) const override;
+  Lambertian(const Vec3 &albedo) : _albedo(albedo) {}
+  virtual bool scatter(const Ray &iray, const HitRecord &hit, Vec3 &attenuation, Ray &scattered) const override;
 
 public:
-  vec3 _albedo;
+  Vec3 _albedo;
 };
 
 class Dielectric : public Material {
 public:
   Dielectric(float roughness, float ior) : _roughness(roughness), _ior(ior) {}
-  virtual bool scatter(const ray &iray, const HitRecord &hit, vec3 &attenuation, ray &scattered) const override;
+  virtual bool scatter(const Ray &iray, const HitRecord &hit, Vec3 &attenuation, Ray &scattered) const override;
 
 public:
   float _roughness;
@@ -32,13 +32,13 @@ public:
 
 class Metal : public Material {
 public:
-  Metal(const vec3 &color, float roughness) 
+  Metal(const Vec3 &color, float roughness) 
   : _color(color)
   , _roughness(roughness) {}
   
-  virtual bool scatter(const ray &iray, const HitRecord &hit, vec3 &attenuation, ray &scattered) const override;
+  virtual bool scatter(const Ray &iray, const HitRecord &hit, Vec3 &attenuation, Ray &scattered) const override;
   
-  vec3 _color;
+  Vec3 _color;
   float _roughness;
 };
 

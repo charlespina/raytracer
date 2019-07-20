@@ -9,19 +9,19 @@ float ffmax(float a, float b) {
   return a > b? a : b;
 }
 
-AxisAlignedBoundingBox::AxisAlignedBoundingBox(const vec3 &imin, const vec3 &imax) 
+AxisAlignedBoundingBox::AxisAlignedBoundingBox(const Vec3 &imin, const Vec3 &imax) 
 : _min(imin)
 , _max(imax)
 {
 }
 
 AxisAlignedBoundingBox& AxisAlignedBoundingBox::combine(const AxisAlignedBoundingBox &other) {
-  _min = vec3(
+  _min = Vec3(
     std::min(_min.x(), other._min.x()),
     std::min(_min.y(), other._min.y()),
     std::min(_min.z(), other._min.z())
   );
-  _max = vec3(
+  _max = Vec3(
     std::max(_max.x(), other._max.x()),
     std::max(_max.y(), other._max.y()),
     std::max(_max.z(), other._max.z())
@@ -29,7 +29,7 @@ AxisAlignedBoundingBox& AxisAlignedBoundingBox::combine(const AxisAlignedBoundin
   return *this;
 }
 
-bool AxisAlignedBoundingBox::hit(const ray& r, float tmin, float tmax) const {
+bool AxisAlignedBoundingBox::hit(const Ray& r, float tmin, float tmax) const {
   for (int a=0; a<3; a++) {
     float t0 = std::min(
       (_min[a] - r.origin()[a]) / r.direction()[a],

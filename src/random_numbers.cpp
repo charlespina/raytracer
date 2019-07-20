@@ -25,18 +25,18 @@ float random_number() {
   return rng.get_random_number();
 }
 
-vec3 random_in_unit_sphere() {
-  vec3 p;
+Vec3 random_in_unit_sphere() {
+  Vec3 p;
   do {
-    p = 2.0f * vec3(random_number(), random_number(), random_number()) - vec3(1, 1, 1);
+    p = 2.0f * Vec3(random_number(), random_number(), random_number()) - Vec3(1, 1, 1);
   } while (p.squared_length() >= 1.0f);
   return p;
 }
 
-vec3 random_in_unit_disk() {
-  vec3 p;
+Vec3 random_in_unit_disk() {
+  Vec3 p;
   do {
-    p = 2.0f * vec3(random_number(), random_number(), 0.0f) - vec3(1.0f, 1.0f, 0.0f);
+    p = 2.0f * Vec3(random_number(), random_number(), 0.0f) - Vec3(1.0f, 1.0f, 0.0f);
   } while (dot(p, p) >= 1.0f);
   return p;
 }

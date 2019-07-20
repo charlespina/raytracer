@@ -21,6 +21,7 @@ set (SOURCES
     src/Plane.cpp
     src/Sphere.cpp)
 
+# static library containing our module
 add_library(${PROJECT_LIB} STATIC ${SOURCES})
 
 # main executable

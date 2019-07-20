@@ -6,23 +6,23 @@
 #include "raytracer/IHitable.h"
 #include "raytracer/HitRecord.h"
 #include "raytracer/materials.h"
-#include "raytracer/ray.h"
-#include "raytracer/vec3.h"
+#include "raytracer/Ray.h"
+#include "raytracer/Vec3.h"
 
 
 class Sphere : public IHitable {
 public:
   Sphere() = delete;
-  Sphere(const vec3 &center, float r, std::shared_ptr<Material> mat, vec3 velocity=vec3(0,0,0));
+  Sphere(const Vec3 &center, float r, std::shared_ptr<Material> mat, Vec3 velocity=Vec3(0,0,0));
   virtual ~Sphere() {};
-  virtual bool hit(const ray& r, float tmin, float tmax, HitRecord &record) const override;
+  virtual bool hit(const Ray& r, float tmin, float tmax, HitRecord &record) const override;
   virtual bool bounding_box(float t0, float t1, AxisAlignedBoundingBox& aabb) const override;
-  vec3 center(float t) const;
+  Vec3 center(float t) const;
   
 public:
-  vec3 _center;
+  Vec3 _center;
   float _radius;
-  vec3 _velocity;
+  Vec3 _velocity;
   std::shared_ptr<Material> _material;
 };
 

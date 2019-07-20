@@ -18,8 +18,8 @@
 #include "raytracer/random_numbers.h"
 #include "raytracer/Scene.h"
 #include "raytracer/Sphere.h"
-#include "raytracer/ray.h"
-#include "raytracer/vec3.h"
+#include "raytracer/Ray.h"
+#include "raytracer/Vec3.h"
 
 
 struct Config {
@@ -29,24 +29,24 @@ struct Config {
   size_t samples_per_pixel = 10;
 } config;
 
-vec3 normal_to_color(const vec3 &n) {
-  return 0.5f * (n + vec3(1.0f, 1.0f, 1.0f));
+Vec3 normal_to_color(const Vec3 &n) {
+  return 0.5f * (n + Vec3(1.0f, 1.0f, 1.0f));
 }
 
-vec3 raycast(const ray &r, IHitable &hitable, size_t depth) {
+Vec3 raycast(const Ray &r, IHitable &hitable, size_t depth) {
   HitRecord record;
   if (hitable.hit(r, 0.001f, std::numeric_limits<float>::max(), record)) {
-    ray scattered;
-    vec3 attenuation;
+    Ray scattered;
+    Vec3 attenuation;
     if (depth < config.max_bounces && record.material->scatter(r, record, attenuation, scattered)) {
       return attenuation * raycast(scattered, hitable, depth+1);
     } else {
-      return vec3(0, 0, 0);
+      return Vec3(0, 0, 0);
     }
   } else {
-    vec3 unit_direction = unit_vector(r.direction());
+    Vec3 unit_direction = unit_vector(r.direction());
     float t = 0.5f * (unit_direction.y() + 1.0f);
-    return (1.0f - t) * vec3(1.0f, 1.0f, 1.0f) + t * vec3(0.5f, 0.7f, 1.0f);
+    return (1.0f - t) * Vec3(1.0f, 1.0f, 1.0f) + t * Vec3(0.5f, 0.7f, 1.0f);
   }
 }
 
@@ -60,14 +60,14 @@ std::shared_ptr<Scene> create_scene() {
 
   // ground "plane"
   /*
-  scene->_geometries.push_back(std::make_shared<Plane>(vec3(0.0f, 0.0f, 0.0f),
-    vec3(0.0f, 1.0f, 0.0f),
-    std::make_shared<Lambertian>(vec3(0.2, 0.6, 0.4))
+  scene->_geometries.push_back(std::make_shared<Plane>(Vec3(0.0f, 0.0f, 0.0f),
+    Vec3(0.0f, 1.0f, 0.0f),
+    std::make_shared<Lambertian>(Vec3(0.2, 0.6, 0.4))
   ));
   */
-  scene->_geometries.push_back(std::make_shared<Sphere>(vec3(0.0f, -100.0f, 0.0f),
+  scene->_geometries.push_back(std::make_shared<Sphere>(Vec3(0.0f, -100.0f, 0.0f),
     100.0f,
-    std::make_shared<Lambertian>(vec3(0.2, 0.6, 0.4))
+    std::make_shared<Lambertian>(Vec3(0.2, 0.6, 0.4))
   ));
 
   // hero spheres
@@ -79,13 +79,13 @@ std::shared_ptr<Scene> create_scene() {
 
     auto mirror = create_mirror_material();
     mirror->_roughness = t;
-    scene->_geometries.push_back(std::make_shared<Sphere>(vec3(0.0, y, 0.0f),
+    scene->_geometries.push_back(std::make_shared<Sphere>(Vec3(0.0, y, 0.0f),
       sphere_radius,
       mirror
     ));
 
     auto lambert = create_lambert_material();
-    scene->_geometries.push_back(std::make_shared<Sphere>(vec3(1.0, y, 0.0f),
+    scene->_geometries.push_back(std::make_shared<Sphere>(Vec3(1.0, y, 0.0f),
       sphere_radius,
       lambert
     ));
@@ -93,7 +93,7 @@ std::shared_ptr<Scene> create_scene() {
     auto lens = create_lens_material();
     lens->_roughness = float(i)/(variations-1);
     scene->_geometries.push_back(std::make_shared<Sphere>(
-      vec3(-1.0f, y, 0.0f), 
+      Vec3(-1.0f, y, 0.0f), 
       sphere_radius,
       lens
     ));
@@ -106,21 +106,21 @@ std::shared_ptr<Scene> create_scene() {
     float litter_radius = 0.08f;
     float max_velocity = 0.3f;
     for (int i = 0; i < num_spheres; i++) {
-      vec3 center(0, litter_radius, -distance/2.0f);
+      Vec3 center(0, litter_radius, -distance/2.0f);
 
-      vec3 offset(2.0f * distance * (-0.5 + random_number()),
+      Vec3 offset(2.0f * distance * (-0.5 + random_number()),
         0.0f,
         2.0f * distance * (-0.5f + random_number()));
       
       float P_bouncing = 0.5f;
       float velocity_y = random_number() < P_bouncing? max_velocity * random_number() : 0.0f;
 
-      auto litter_mat = std::make_shared<Lambertian>(vec3(random_number(), random_number(), random_number()));
+      auto litter_mat = std::make_shared<Lambertian>(Vec3(random_number(), random_number(), random_number()));
       auto sphere = std::make_shared<Sphere>(
         center + offset,
         litter_radius,
         litter_mat,
-        vec3(0.0, velocity_y, 0.0)
+        Vec3(0.0, velocity_y, 0.0)
       );
       scene->_geometries.push_back(sphere);
     }
@@ -148,13 +148,13 @@ int main(int argc, char **argv) {
   
     for (size_t x = 0; x < img._width; x++) {
       for (size_t y = 0; y < img._height; y++) {
-        vec3 color(0, 0, 0);
+        Vec3 color(0, 0, 0);
         
         for (size_t sample=0; sample < config.samples_per_pixel; sample++) {
           float u = float(x + random_number()) / float(img._width);
           float v = float(y + random_number()) / float(img._height);
         
-          ray r = camera.get_ray(u, v, t_begin, t_end);
+          Ray r = camera.get_ray(u, v, t_begin, t_end);
           color += raycast(r, *bvh.get(), 0);
         }
         
@@ -167,7 +167,7 @@ int main(int argc, char **argv) {
 
     // convert to output format
     Image<uint8_t> img_out(img._width, img._height);
-    vec3 v_out;
+    Vec3 v_out;
     for (size_t x = 0; x < img._width; x++) {
       for (size_t y = 0; y < img._height; y++) {
         img.get(x, y, v_out);

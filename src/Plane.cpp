@@ -1,13 +1,13 @@
 #include "raytracer/Plane.h"
-#include "raytracer/ray.h"
+#include "raytracer/Ray.h"
 
-Plane::Plane(const vec3 &position, const vec3 &normal, std::shared_ptr<Material> material)
+Plane::Plane(const Vec3 &position, const Vec3 &normal, std::shared_ptr<Material> material)
 : _position(position)
 , _normal(normal)
 , _material(material)
 {}
 
-bool Plane::hit(const ray& r, float t_min, float t_max, HitRecord &record) const {
+bool Plane::hit(const Ray& r, float t_min, float t_max, HitRecord &record) const {
   float rdn = dot(_normal, r.direction());
 
   if (abs(rdn) < std::numeric_limits<float>::epsilon()) return false;

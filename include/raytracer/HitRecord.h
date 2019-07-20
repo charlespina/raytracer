@@ -1,13 +1,13 @@
 #ifndef RT_HITRECORD_H
 #define RT_HITRECORD_H
 
-#include "raytracer/vec3.h"
+#include "raytracer/Vec3.h"
 
 class Material;
 struct HitRecord {
   float t;
-  vec3 p;
-  vec3 normal;
+  Vec3 p;
+  Vec3 normal;
   Material *material;
 };
 
