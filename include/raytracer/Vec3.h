@@ -48,8 +48,10 @@ public:
   inline void make_unit_vector();
 
   float e[3];
-};
 
+  friend bool operator==(const Vec3 &a, const Vec3 &b);
+  friend bool operator!=(const Vec3 &a, const Vec3 &b);
+};
 
 
 inline std::istream& operator>>(std::istream &is, Vec3 &t) {
@@ -155,6 +157,16 @@ inline Vec3 unit_vector(Vec3 v) {
 
 inline Vec3 reflect(const Vec3 &v, const Vec3 &n) {
   return v - 2.0f * dot(v, n) * n;
+}
+
+bool operator==(const Vec3 &a, const Vec3 &b) {
+  return a[0] == b[0] &&
+    a[1] == b[1] &&
+    a[2] == b[2];
+}
+
+bool operator!=(const Vec3 &a, const Vec3 &b) {
+  return !(a==b);
 }
 
 #endif
