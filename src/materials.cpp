@@ -27,6 +27,7 @@ bool Lambertian::scatter(const Ray &iray, const HitRecord &hit, Vec3 &attenuatio
   float f0 = 0.08f;
   
   float P_reflect = schlick(abs(ndv), 1.0f + f0);
+  float u=0, v=0;
 
   if (random_number() < P_reflect) {
     Vec3 reflected = reflect(iray.direction(), hit.normal);
@@ -35,7 +36,7 @@ bool Lambertian::scatter(const Ray &iray, const HitRecord &hit, Vec3 &attenuatio
   } else {
     // diffuse scatter - scatter in random direction
     scattered = Ray(hit.p, hit.normal + random_in_unit_sphere(), iray.time());
-    attenuation = _albedo;
+    attenuation = _albedo->sample_color(u, v, hit.p);
   }
   return true;
 }
@@ -64,10 +65,11 @@ bool Dielectric::scatter(const Ray &iray, const HitRecord &hit, Vec3 &attenuatio
     P_reflect = 1.0f;
   }
 
+  float u = 0, v = 0;
   if (random_number() < P_reflect) {
-    scattered = Ray(hit.p, reflected + roughness_lobe(_roughness), iray.time());
+    scattered = Ray(hit.p, reflected + roughness_lobe(_roughness->sample_scalar(u, v, hit.p)), iray.time());
   } else {
-    scattered = Ray(hit.p, refracted + roughness_lobe(_roughness), iray.time()); 
+    scattered = Ray(hit.p, refracted + roughness_lobe(_roughness->sample_scalar(u, v, hit.p)), iray.time()); 
   }
 
   return true;
@@ -85,9 +87,20 @@ std::shared_ptr<Dielectric> create_lens_material() {
   return std::make_shared<Dielectric>(0.0f, 1.0f);
 }
 
+Metal::Metal(const Vec3 &color, float roughness)
+: _color(std::make_shared<ConstantTexture>(color))
+, _roughness(std::make_shared<ConstantTexture>(Vec3(roughness)))
+{}
+
+Metal::Metal(std::shared_ptr<Texture> color, std::shared_ptr<Texture> roughness)
+: _color(color)
+, _roughness(roughness)
+{}
+
 bool Metal::scatter(const Ray &iray, const HitRecord &hit, Vec3 &attenuation, Ray &scattered) const {
   Vec3 reflected = reflect(unit_vector(iray.direction()), hit.normal);
-  scattered = Ray(hit.p, reflected + roughness_lobe(_roughness), iray.time());
-  attenuation = _color;
+  float u = 0, v = 0;
+  scattered = Ray(hit.p, reflected + roughness_lobe(_roughness->sample_scalar(u, v, hit.p)), iray.time());
+  attenuation = _color->sample_color(u, v, hit.p);
   return ((dot(scattered.direction(), hit.normal)) > 0);
 }

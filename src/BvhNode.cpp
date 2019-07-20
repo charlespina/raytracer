@@ -70,3 +70,26 @@ bool BvhNode::bounding_box(float t0, float t1, AxisAlignedBoundingBox& aabb) con
   aabb = _aabb;
   return true;
 }
+
+size_t BvhNode::count_left() const {
+  size_t result = 0;
+  if (auto left_bvh = std::dynamic_pointer_cast<BvhNode>(_left)) result += left_bvh->count();
+  else if (_left != nullptr)
+    result += 1;
+  return result;
+}
+
+size_t BvhNode::count_right() const {
+  size_t result = 0;
+  if (auto right_bvh = std::dynamic_pointer_cast<BvhNode>(_right)) result += right_bvh->count();
+  else if (_right != nullptr)
+    result += 1;
+  return result;
+}
+
+size_t BvhNode::count() const {
+  size_t result = 0;
+  result += count_left();
+  result += count_right();
+  return result;
+}

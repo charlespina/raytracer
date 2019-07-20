@@ -36,7 +36,7 @@ bool AxisAlignedBoundingBox::hit(const Ray& r, float tmin, float tmax) const {
       (_max[a] - r.origin()[a]) / r.direction()[a]
     );
 
-    float t1 = std::min(
+    float t1 = std::max(
       (_min[a] - r.origin()[a]) / r.direction()[a],
       (_max[a] - r.origin()[a]) / r.direction()[a]
     );

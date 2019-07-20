@@ -9,8 +9,8 @@
 // with this software. If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
 //==================================================================================================
 
-#ifndef RT_Vec3_H
-#define RT_Vec3_H
+#ifndef RT_VEC3_H
+#define RT_VEC3_H
 
 #include <math.h>
 #include <stdlib.h>
@@ -49,8 +49,8 @@ public:
 
   float e[3];
 
-  friend bool operator==(const Vec3 &a, const Vec3 &b);
-  friend bool operator!=(const Vec3 &a, const Vec3 &b);
+  friend inline bool operator==(const Vec3 &a, const Vec3 &b);
+  friend inline bool operator!=(const Vec3 &a, const Vec3 &b);
 };
 
 
@@ -159,13 +159,13 @@ inline Vec3 reflect(const Vec3 &v, const Vec3 &n) {
   return v - 2.0f * dot(v, n) * n;
 }
 
-bool operator==(const Vec3 &a, const Vec3 &b) {
+inline bool operator==(const Vec3 &a, const Vec3 &b) {
   return a[0] == b[0] &&
     a[1] == b[1] &&
     a[2] == b[2];
 }
 
-bool operator!=(const Vec3 &a, const Vec3 &b) {
+inline bool operator!=(const Vec3 &a, const Vec3 &b) {
   return !(a==b);
 }
 

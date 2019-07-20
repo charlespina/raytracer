@@ -22,6 +22,21 @@
 #include "raytracer/Vec3.h"
 
 
+/* 
+TODO
+
+x create bounds for plane
+- proper fresnel
+- sobel lines
+- asm pbr
+- other primitives?
+- fractals
+- finish week of raytracer
+  - textures
+
+*/
+
+
 struct Config {
   size_t image_width = 300;
   size_t image_height = 300;
@@ -58,16 +73,13 @@ std::shared_ptr<BvhNode> build_bvh(std::vector<std::shared_ptr<IHitable> > geoms
 std::shared_ptr<Scene> create_scene() {
   auto scene = std::make_shared<Scene>();
 
-  // ground "plane"
-  /*
+  // ground plane
+  auto mirror = create_mirror_material();
+  mirror->_roughness = std::make_shared<ConstantTexture>(0.5f);
   scene->_geometries.push_back(std::make_shared<Plane>(Vec3(0.0f, 0.0f, 0.0f),
     Vec3(0.0f, 1.0f, 0.0f),
-    std::make_shared<Lambertian>(Vec3(0.2, 0.6, 0.4))
-  ));
-  */
-  scene->_geometries.push_back(std::make_shared<Sphere>(Vec3(0.0f, -100.0f, 0.0f),
-    100.0f,
-    std::make_shared<Lambertian>(Vec3(0.2, 0.6, 0.4))
+    mirror
+    // std::make_shared<Lambertian>(Vec3(0.2, 0.6, 0.4))
   ));
 
   // hero spheres
@@ -78,7 +90,7 @@ std::shared_ptr<Scene> create_scene() {
     float y = 1.33f * sphere_radius * variations * t + sphere_radius;
 
     auto mirror = create_mirror_material();
-    mirror->_roughness = t;
+    mirror->_roughness = std::make_shared<ConstantTexture>(t);
     scene->_geometries.push_back(std::make_shared<Sphere>(Vec3(0.0, y, 0.0f),
       sphere_radius,
       mirror
@@ -91,7 +103,7 @@ std::shared_ptr<Scene> create_scene() {
     ));
 
     auto lens = create_lens_material();
-    lens->_roughness = float(i)/(variations-1);
+    lens->_roughness = std::make_shared<ConstantTexture>(float(i)/(variations-1));
     scene->_geometries.push_back(std::make_shared<Sphere>(
       Vec3(-1.0f, y, 0.0f), 
       sphere_radius,
@@ -144,7 +156,7 @@ int main(int argc, char **argv) {
     auto scene = create_scene();
     float t_begin = 0.0f;
     float t_end = 0.0f;
-    auto bvh = scene; // build_bvh(scene->_geometries, t_begin, t_end);
+    auto bvh = build_bvh(scene->_geometries, t_begin, t_end);
   
     for (size_t x = 0; x < img._width; x++) {
       for (size_t y = 0; y < img._height; y++) {
