@@ -1,4 +1,5 @@
 #include "raytracer/AxisAlignedBoundingBox.h"
+#include <algorithm>
 
 float ffmin(float a, float b) {
   return a < b? a : b;

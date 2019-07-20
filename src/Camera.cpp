@@ -1,6 +1,8 @@
 #include "raytracer/Camera.h"
 #include "raytracer/random_numbers.h"
 
+#define PI 3.14159265358979323846f
+
 Camera::Camera(vec3 position, vec3 target, vec3 vup, 
   float vfov, float aspect, float aperture, float focus_distance)
 : _vertical_fov(vfov)
@@ -8,7 +10,7 @@ Camera::Camera(vec3 position, vec3 target, vec3 vup,
 , _lens_radius(aperture/2.0f)
 , _origin(position)
 {
-  float theta = vfov * M_PI / 180.0f;
+  float theta = vfov * PI / 180.0f;
   float half_height = tan(theta/2.0f);
   float half_width = aspect * half_height;
 

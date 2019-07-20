@@ -25,7 +25,7 @@ bool Sphere::hit(const ray& r, float t_min, float t_max, HitRecord &record) cons
   float a = dot(r.direction(), r.direction());
   float b = 2.0f * dot(oc, r.direction());
   float c = dot(oc, oc) - _radius * _radius;
-  float discriminant = b*b - 4.0*a*c;
+  float discriminant = b*b - 4.0f*a*c;
 
   if (discriminant < 0) return false;
   

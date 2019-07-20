@@ -144,7 +144,7 @@ int main(int argc, char **argv) {
     auto scene = create_scene();
     float t_begin = 0.0f;
     float t_end = 0.0f;
-    auto bvh = build_bvh(scene->_geometries, t_begin, t_end);
+    auto bvh = scene; // build_bvh(scene->_geometries, t_begin, t_end);
   
     for (size_t x = 0; x < img._width; x++) {
       for (size_t y = 0; y < img._height; y++) {

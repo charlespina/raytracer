@@ -1,6 +1,7 @@
 #include "raytracer/BvhNode.h"
 #include "raytracer/random_numbers.h"
 #include <algorithm>
+#include <functional>
 
 using comparison_fn_t = std::function<bool(const std::shared_ptr<IHitable> &, const std::shared_ptr<IHitable> &)>;
 
@@ -67,4 +68,5 @@ bool BvhNode::hit(const ray& r, float t_min, float t_max, HitRecord &record) con
 
 bool BvhNode::bounding_box(float t0, float t1, AxisAlignedBoundingBox& aabb) const {
   aabb = _aabb;
+  return true;
 }
