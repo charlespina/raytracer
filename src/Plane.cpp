@@ -16,7 +16,7 @@ bool Plane::hit(const Ray& r, float t_min, float t_max, HitRecord &record) const
   if (t >= t_min && t < t_max) {
     record.t = t;
     record.normal = _normal;
-    record.p = t * r.direction() + r.origin();
+    record.p = r.point_at_parameter(t); //t * r.direction() + r.origin();
     record.material = _material.get();
     return true;
   }

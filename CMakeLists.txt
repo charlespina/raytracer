@@ -18,6 +18,7 @@ set (SOURCES
     src/Camera.cpp
     src/materials.cpp
     src/random_numbers.cpp
+    src/Perlin.cpp
     src/Plane.cpp
     src/Sphere.cpp)
 

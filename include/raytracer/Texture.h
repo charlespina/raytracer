@@ -1,6 +1,7 @@
 #ifndef RT_TEXTURE_H
 #define RT_TEXTURE_H
 
+#include "raytracer/Perlin.h"
 #include "raytracer/Vec3.h"
 #include <cmath>
 
@@ -39,13 +40,24 @@ public:
 
   Vec3 sample_color(float u, float v, const Vec3 &p) const override {
     float rate = 10.0f;
-    float sines = sin(rate * p.x()) * sin(rate * p.y()) * sin(rate * p.z());
+    float sines = std::sin(rate * p.x()) * std::sin(rate * p.z()); // * std::sin(rate * p.z());
     if (sines < 0) {
       return _odd->sample_color(u, v, p);
     } else {
       return _even->sample_color(u, v, p);
     }
   }
+};
+
+class NoiseTexture : public Texture {
+public:
+  NoiseTexture() = default;
+  virtual Vec3 sample_color(float u, float v, const Vec3 &p) const override {
+    return Vec3(1.0f) * perlin.noise(p);
+  }
+
+private:
+  Perlin perlin;
 };
 
 #endif

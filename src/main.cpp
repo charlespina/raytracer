@@ -18,6 +18,7 @@
 #include "raytracer/random_numbers.h"
 #include "raytracer/Scene.h"
 #include "raytracer/Sphere.h"
+#include "raytracer/Perlin.h"
 #include "raytracer/Ray.h"
 #include "raytracer/Vec3.h"
 
@@ -32,7 +33,8 @@ x create bounds for plane
 - other primitives?
 - fractals
 - finish week of raytracer
-  - textures
+  x textures
+  - perlin noise
 
 */
 
@@ -70,16 +72,40 @@ std::shared_ptr<BvhNode> build_bvh(std::vector<std::shared_ptr<IHitable> > geoms
   return std::make_shared<BvhNode>(copied_geom_list.begin(), copied_geom_list.end(), t0, t1);
 }
 
-std::shared_ptr<Scene> create_scene() {
+std::shared_ptr<Scene> create_single_sphere_scene() {
+  auto scene = std::make_shared<Scene>();
+
+  auto noise_mat = std::make_shared<Lambertian>(
+    std::make_shared<NoiseTexture>()
+  );
+
+  scene->_geometries.push_back(std::make_shared<Plane>(Vec3(0.0f, 0.0f, 0.0f),
+    Vec3(0.0f, 1.0f, 0.0f),
+    noise_mat
+  ));
+
+  float sphere_radius = 1.5f;
+  scene->_geometries.push_back(std::make_shared<Sphere>(
+    Vec3(0.0f, sphere_radius, -1.0f), 
+    sphere_radius,
+    noise_mat
+  ));
+
+  return scene;
+}
+
+std::shared_ptr<Scene> create_nine_sphere_scene() {
   auto scene = std::make_shared<Scene>();
 
   // ground plane
-  auto mirror = create_mirror_material();
-  mirror->_roughness = std::make_shared<ConstantTexture>(0.5f);
+  auto checker = std::make_shared<CheckerTexture>(
+    std::make_shared<ConstantTexture>(Vec3(0, 0, 0)),
+    std::make_shared<ConstantTexture>(Vec3(1, 1, 1))
+  );
+  auto ground_mat = std::make_shared<Lambertian>( checker); 
   scene->_geometries.push_back(std::make_shared<Plane>(Vec3(0.0f, 0.0f, 0.0f),
     Vec3(0.0f, 1.0f, 0.0f),
-    mirror
-    // std::make_shared<Lambertian>(Vec3(0.2, 0.6, 0.4))
+    ground_mat
   ));
 
   // hero spheres
@@ -149,11 +175,11 @@ int main(int argc, char **argv) {
       {0, 1, 0}, // up
       70.0f, // vfov
       float(img._width)/float(img._height), // aspect
-      0.3f, // aperture
+      0.0f, // aperture
       2.75f // focus dist
      );
     
-    auto scene = create_scene();
+    auto scene = create_single_sphere_scene();
     float t_begin = 0.0f;
     float t_end = 0.0f;
     auto bvh = build_bvh(scene->_geometries, t_begin, t_end);
