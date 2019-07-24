@@ -10,6 +10,7 @@
 class Material {
 public:
   virtual bool scatter(const Ray &iray, const HitRecord &hit, Vec3 &atten, Ray &scattered) const = 0;
+  virtual Vec3 emit(const HitRecord &hit) const { return Vec3(0); }
 };
 
 class Lambertian : public Material {
@@ -43,6 +44,18 @@ public:
 public:
   std::shared_ptr<Texture> _color;
   std::shared_ptr<Texture> _roughness;
+};
+
+class DiffuseLight : public Material {
+public:
+  DiffuseLight(std::shared_ptr<Texture> emission) : _emission(emission) {}
+
+  virtual bool scatter(const Ray &iray, const HitRecord &hit, Vec3 &attenuation, Ray &scattered) const override;
+  virtual Vec3 emit(const HitRecord &hit) const override;
+
+public:
+  std::shared_ptr<Texture> _emission;
+
 };
 
 std::shared_ptr<Metal> create_mirror_material();

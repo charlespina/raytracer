@@ -55,12 +55,14 @@ Vec3 raycast(const Ray &r, IHitable &hitable, size_t depth) {
   HitRecord record;
   if (hitable.hit(r, 0.001f, std::numeric_limits<float>::max(), record)) {
     Ray scattered;
+    Vec3 accumulated(0);
     Vec3 attenuation;
+    Vec3 emitted = record.material->emit(record);
+    accumulated += emitted;
     if (depth < config.max_bounces && record.material->scatter(r, record, attenuation, scattered)) {
-      return attenuation * raycast(scattered, hitable, depth+1);
-    } else {
-      return Vec3(0, 0, 0);
-    }
+      accumulated += attenuation * raycast(scattered, hitable, depth+1);
+    } 
+    return accumulated;
   } else {
     Vec3 unit_direction = unit_vector(r.direction());
     float t = 0.5f * (unit_direction.y() + 1.0f);
