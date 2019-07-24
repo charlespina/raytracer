@@ -2,6 +2,7 @@
 #define RT_IMAGE_H
 
 #include <vector>
+#include <cassert>
 #include "raytracer/Vec3.h"
 
 #define RT_IMG_CHANNELS 3
