@@ -27,7 +27,8 @@ bool Lambertian::scatter(const Ray &iray, const HitRecord &hit, Vec3 &attenuatio
   float f0 = 0.08f;
   
   float P_reflect = schlick(abs(ndv), 1.0f + f0);
-  float u=0, v=0;
+  float u = hit.texcoord.u();
+  float v = hit.texcoord.v();
 
   if (random_number() < P_reflect) {
     Vec3 reflected = reflect(iray.direction(), hit.normal);

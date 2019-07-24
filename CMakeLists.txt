@@ -20,7 +20,9 @@ set (SOURCES
     src/random_numbers.cpp
     src/Perlin.cpp
     src/Plane.cpp
-    src/Sphere.cpp)
+    src/Sphere.cpp
+    src/textures.cpp
+)
 
 # static library containing our module
 add_library(${PROJECT_LIB} STATIC ${SOURCES})

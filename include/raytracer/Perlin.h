@@ -8,9 +8,10 @@ class Perlin {
 public:
   Perlin();
   float noise(const Vec3 &p) const;
+  float turbulent_noise(const Vec3 &p, int depth=7) const;
 
 private:
-  using data_t = std::array<float, 256>;
+  using data_t = std::array<Vec3, 256>;
   using permutation_t = std::array<int, 256>;
 
   data_t generate();

@@ -34,7 +34,8 @@ x create bounds for plane
 - fractals
 - finish week of raytracer
   x textures
-  - perlin noise
+  x perlin noise
+  - image textures
 
 */
 
@@ -79,6 +80,19 @@ std::shared_ptr<Scene> create_single_sphere_scene() {
     std::make_shared<NoiseTexture>()
   );
 
+  std::shared_ptr<ImageTexture> earth_texture;
+  {
+    int w, h, num_channels;
+    uint8_t *img = stbi_load("./resources/textures/earth_day.jpg", &w, &h, &num_channels, RT_IMG_CHANNELS);
+    earth_texture = std::make_shared<ImageTexture>(
+      Image<uint8_t>(img, w, h)
+    );
+  }
+
+  auto earth_mat = std::make_shared<Lambertian>(
+    earth_texture
+  );
+
   scene->_geometries.push_back(std::make_shared<Plane>(Vec3(0.0f, 0.0f, 0.0f),
     Vec3(0.0f, 1.0f, 0.0f),
     noise_mat
@@ -88,7 +102,7 @@ std::shared_ptr<Scene> create_single_sphere_scene() {
   scene->_geometries.push_back(std::make_shared<Sphere>(
     Vec3(0.0f, sphere_radius, -1.0f), 
     sphere_radius,
-    noise_mat
+    earth_mat
   ));
 
   return scene;

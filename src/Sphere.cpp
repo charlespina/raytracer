@@ -1,5 +1,23 @@
 #include "raytracer/Sphere.h"
 
+#define PI 3.14159f
+
+namespace {
+  TexCoord get_sphere_texcoord(const Vec3 &p) {
+    float phi = atan2(p.z(), p.x());
+    float theta = asin(p.y());
+
+    float u = 1.0f - (phi + PI) / (2 * PI);
+    float v = (theta + PI/2.0f) / PI;
+  
+    TexCoord texcoord(
+      u, v
+    );
+
+    return texcoord;
+  }
+}
+
 Sphere::Sphere(const Vec3 &center, float r, std::shared_ptr<Material> mat, Vec3 velocity)
 : _center(center)
 , _radius(r)
@@ -41,10 +59,14 @@ bool Sphere::hit(const Ray& r, float t_min, float t_max, HitRecord &record) cons
   }
 
   if (t > 0) {
+    Vec3 P = r.point_at_parameter(t);
+    Vec3 N = unit_vector((P - p_center) / _radius);
+  
     record.t = t;
-    record.p = r.point_at_parameter(t);
-    record.normal = (record.p - p_center) / _radius;
+    record.p = P;
+    record.normal = N;
     record.material = _material.get();
+    record.texcoord = get_sphere_texcoord(N);
     return true;
   }
   

@@ -3,8 +3,13 @@
 
 #include "raytracer/AxisAlignedBoundingBox.h"
 #include "raytracer/BvhNode.h"
+#include "raytracer/Image.h"
 #include "raytracer/Sphere.h"
+#include "raytracer/textures.h"
 #include "raytracer/Vec3.h"
+
+#define STB_IMAGE_IMPLEMENTATION
+#include "stb/stb_image.h"
 
 TEST_CASE("a test", "[smoke]") {
   REQUIRE(true);
@@ -118,6 +123,60 @@ TEST_CASE("bvh hit tests", "[bvh][ray]") {
   REQUIRE(hit_bvh);
 }
 
+TEST_CASE("images", "[img]") {
+  Image<float> img(32, 32);
 
+  REQUIRE(img._width == 32);
+  REQUIRE(img._height == 32);
+
+  for (size_t x=0; x<img._width; x++) {
+    for (size_t y=0; y<img._height; y++) {
+      img.set(x, y, {
+        x/(float)img._width,
+        y/(float)img._height,
+        0.0f
+      });
+    }
+  }
+
+  Vec3 color;
+  for (size_t x=0; x<img._width; x++) {
+    for (size_t y=0; y<img._height; y++) {
+      img.get(x, y, color);
+
+      REQUIRE(color.x() == x/(float)img._width);
+      REQUIRE(color.y() == y/(float)img._height);
+      REQUIRE(color.z() == 0);
+    }
+  }
+
+  size_t w = 4096;
+  size_t h = 8192;
+  std::vector<uint8_t> img_data(w * h * 3);
+  Image<uint8_t> img_8(img_data.data(), w, h);
+
+  REQUIRE(img_8._width == w);
+  REQUIRE(img_8._height == h);
+}
+
+TEST_CASE("image texture", "[img][texture]") {
+  size_t w = 4096;
+  size_t h = 8192;
+  std::vector<uint8_t> img_data(w * h * 3);
+  std::shared_ptr<ImageTexture> texture = std::make_shared<ImageTexture>(
+    Image<uint8_t>(img_data.data(), w, h)
+  );
+
+  REQUIRE(texture->_image._width == w);
+  REQUIRE(texture->_image._height == h);
+
+  int iw, ih, num_channels;
+  uint8_t *stb_data = stbi_load("./resources/textures/earth_day.jpg", &iw, &ih, &num_channels, RT_IMG_CHANNELS);
+  ImageTexture stb_texture(
+    Image<uint8_t>(stb_data, iw, ih)
+  );
+  REQUIRE(stb_texture._image._width == iw);
+  REQUIRE(stb_texture._image._height == ih);
+}
 
 

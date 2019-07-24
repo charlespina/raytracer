@@ -4,7 +4,7 @@
 #include "raytracer/HitRecord.h"
 #include "raytracer/random_numbers.h"
 #include "raytracer/Ray.h"
-#include "raytracer/Texture.h"
+#include "raytracer/textures.h"
 #include <memory>
 
 class Material {
