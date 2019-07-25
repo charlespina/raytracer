@@ -1,22 +1,23 @@
-#ifndef RT_PLANE_H
-#define RT_PLANE_H
+#ifndef RT_RECTANGLE_H
+#define RT_RECTANGLE_H
 
 #include "raytracer/IHitable.h"
+#include "raytracer/materials.h"
+#include "raytracer/Plane.h"
 #include "raytracer/Vec3.h"
 
-class Plane : public IHitable {
+class Rectangle : public IHitable {
 public:
-  Plane() {}
-  Plane(const Vec3 &position, const Vec3 &normal, std::shared_ptr<Material> material);
-  virtual ~Plane() {};
+  Rectangle(Vec3 pt0, Vec3 pt1, std::shared_ptr<Material> material);
+
   virtual bool hit(const Ray& r, float t_min, float t_max, HitRecord &record) const override;
   virtual bool bounding_box(float t0, float t1, AxisAlignedBoundingBox& aabb) const override;
 
-public:
-  Vec3 _position;
-  Vec3 _normal;
+private:
+  Plane _plane;
+  float _width;
+  float _height;
   std::shared_ptr<Material> _material;
 };
 
 #endif
-
