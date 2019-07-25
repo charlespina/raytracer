@@ -82,6 +82,10 @@ std::shared_ptr<Scene> create_single_sphere_scene() {
     std::make_shared<NoiseTexture>()
   );
 
+  auto light_mat = std::make_shared<DiffuseLight>(
+    std::make_shared<ConstantTexture>(5.0f)
+  );
+
   std::shared_ptr<ImageTexture> earth_texture;
   {
     int w, h, num_channels;
@@ -97,7 +101,7 @@ std::shared_ptr<Scene> create_single_sphere_scene() {
 
   scene->_geometries.push_back(std::make_shared<Plane>(Vec3(0.0f, 0.0f, 0.0f),
     Vec3(0.0f, 1.0f, 0.0f),
-    noise_mat
+    light_mat
   ));
 
   float sphere_radius = 1.5f;
@@ -227,9 +231,9 @@ int main(int argc, char **argv) {
         img.get(x, y, v_out);
 
         // tonemap
-        v_out.e[0] = sqrtf(v_out.r());
-        v_out.e[1] = sqrtf(v_out.g());
-        v_out.e[2] = sqrtf(v_out.b());
+        v_out[0] = std::min(1.0f, sqrtf(v_out.r()));
+        v_out[1] = std::min(1.0f, sqrtf(v_out.g()));
+        v_out[2] = std::min(1.0f, sqrtf(v_out.b()));
 
         // remap from 0.0-1.0 to 0-255
         v_out *= 255.99f;
