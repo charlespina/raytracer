@@ -20,6 +20,7 @@
 #include "raytracer/Sphere.h"
 #include "raytracer/Perlin.h"
 #include "raytracer/Ray.h"
+#include "raytracer/Rectangle.h"
 #include "raytracer/Vec3.h"
 
 
@@ -56,11 +57,16 @@ Vec3 raycast(const Ray &r, IHitable &hitable, size_t depth) {
   if (hitable.hit(r, 0.001f, std::numeric_limits<float>::max(), record)) {
     Ray scattered;
     Vec3 attenuation;
+    Vec3 accumulated(0);
+
+    Vec3 emitted = record.material->emit(r, record);
+    accumulated += emitted;
+  
     if (depth < config.max_bounces && record.material->scatter(r, record, attenuation, scattered)) {
-      return attenuation * raycast(scattered, hitable, depth+1);
-    } else {
-      return Vec3(0, 0, 0);
+      accumulated += attenuation * raycast(scattered, hitable, depth + 1);
     }
+
+    return accumulated;
   } else {
     Vec3 unit_direction = unit_vector(r.direction());
     float t = 0.5f * (unit_direction.y() + 1.0f);
@@ -95,6 +101,11 @@ std::shared_ptr<Scene> create_single_sphere_scene() {
 
   scene->_geometries.push_back(std::make_shared<Plane>(Vec3(0.0f, 0.0f, 0.0f),
     Vec3(0.0f, 1.0f, 0.0f),
+    noise_mat
+  ));
+
+  scene->_geometries.push_back(std::make_shared<Rectangle>(Vec3(2.0f, 1.0f, -1.0f),
+    Vec3(2.0f, 1.25f, 0.0f),
     noise_mat
   ));
 

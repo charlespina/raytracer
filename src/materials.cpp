@@ -105,3 +105,12 @@ bool Metal::scatter(const Ray &iray, const HitRecord &hit, Vec3 &attenuation, Ra
   attenuation = _color->sample_color(u, v, hit.p);
   return ((dot(scattered.direction(), hit.normal)) > 0);
 }
+
+
+bool DiffuseLight::scatter(const Ray &iray, const HitRecord &hit, Vec3 &attenuation, Ray &scattered) const {
+  return false;
+}
+
+Vec3 DiffuseLight::emit(const Ray &iray, const HitRecord &hit) const {
+  return _emissive->sample_color(hit.texcoord.u(), hit.texcoord.v(), hit.p);
+}
