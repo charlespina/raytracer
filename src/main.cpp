@@ -56,14 +56,14 @@ Vec3 raycast(const Ray &r, IHitable &hitable, size_t depth) {
   HitRecord record;
   if (hitable.hit(r, 0.001f, std::numeric_limits<float>::max(), record)) {
     Ray scattered;
-    Vec3 accumulated(0);
+    Vec3 accumulated(0, 0, 0);
 
     Vec3 emitted = record.material->emit(r, record);
     accumulated += emitted;
   
     Vec3 attenuation;
     if (depth < config.max_bounces && record.material->scatter(r, record, attenuation, scattered)) {
-      accumulated += attenuation * raycast(scattered, hitable, depth + 1);
+      accumulated += (attenuation.array() * raycast(scattered, hitable, depth + 1).array()).matrix();
     }
 
     return accumulated;
@@ -175,7 +175,7 @@ std::shared_ptr<Scene> create_nine_sphere_scene() {
     for (int i = 0; i < num_spheres; i++) {
       Vec3 center(0, litter_radius, -distance/2.0f);
 
-      Vec3 offset(2.0f * distance * (-0.5 + random_number()),
+      Vec3 offset(2.0f * distance * (-0.5f + random_number()),
         0.0f,
         2.0f * distance * (-0.5f + random_number()));
       
@@ -208,7 +208,7 @@ int main(int argc, char **argv) {
       2.75f // focus dist
      );
     
-    auto scene = create_single_sphere_scene();
+    auto scene = create_nine_sphere_scene();
     float t_begin = 0.0f;
     float t_end = 0.0f;
     auto bvh = build_bvh(scene->_geometries, t_begin, t_end);
@@ -240,17 +240,17 @@ int main(int argc, char **argv) {
         img.get(x, y, v_out);
 
         // tonemap
-        v_out[0] = std::min(1.0f, sqrtf(v_out.r()));
-        v_out[1] = std::min(1.0f, sqrtf(v_out.g()));
-        v_out[2] = std::min(1.0f, sqrtf(v_out.b()));
+        v_out[0] = std::min(1.0f, sqrtf(v_out.x()));
+        v_out[1] = std::min(1.0f, sqrtf(v_out.y()));
+        v_out[2] = std::min(1.0f, sqrtf(v_out.z()));
 
         // remap from 0.0-1.0 to 0-255
         v_out *= 255.99f;
         img_out.set(
           x, y,
-          (uint8_t)v_out.r(), 
-          (uint8_t)v_out.g(), 
-          (uint8_t)v_out.b()
+          (uint8_t)v_out.x(), 
+          (uint8_t)v_out.y(), 
+          (uint8_t)v_out.z()
         );
       }
     }

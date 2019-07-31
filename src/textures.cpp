@@ -21,8 +21,8 @@ ImageTexture::ImageTexture(const Image<uint8_t> &img_8) : _image(img_8._width, i
 }
 
 Vec3 ImageTexture::sample_color(float u, float v, const Vec3 &p) const {
-  int x = u * _image._width;
-  int y = (1-v) * _image._height - 0.001f; // y-flip
+  int x = (int)(u * _image._width);
+  int y = (int)((1-v) * _image._height - 0.001f); // y-flip
   x = std::max(0, std::min(x, (int)_image._width - 1));
   y = std::max(0, std::min(y, (int)_image._height - 1));
   

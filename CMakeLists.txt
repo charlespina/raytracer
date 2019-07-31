@@ -9,6 +9,7 @@ set (CMAKE_CXX_STANDARD 14)
 
 include_directories (
     external/stb/include
+    external/eigen
     include
 )
 
@@ -16,6 +17,7 @@ set (SOURCES
     src/AxisAlignedBoundingBox.cpp
     src/BvhNode.cpp
     src/Camera.cpp
+    src/Instance.cpp
     src/materials.cpp
     src/random_numbers.cpp
     src/Perlin.cpp

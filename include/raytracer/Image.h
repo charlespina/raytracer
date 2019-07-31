@@ -29,9 +29,9 @@ struct Image {
 
   void set(size_t x, size_t y, const Vec3 &v) {
     size_t px = index(x, y);
-    _data[px + 0] = v.r();
-    _data[px + 1] = v.g();
-    _data[px + 2] = v.b();
+    _data[px + 0] = v.x();
+    _data[px + 1] = v.y();
+    _data[px + 2] = v.z();
   }
 
   void set(size_t x, size_t y, T r, T g, T b) {
@@ -42,9 +42,9 @@ struct Image {
   }
 
   void get(size_t x, size_t y, Vec3 &v) const {
-    v.e[0] = get_channel(x, y, 0);
-    v.e[1] = get_channel(x, y, 1);
-    v.e[2] = get_channel(x, y, 2);
+    v[0] = get_channel(x, y, 0);
+    v[1] = get_channel(x, y, 1);
+    v[2] = get_channel(x, y, 2);
   }
 
   inline size_t index(size_t x, size_t y) const {

@@ -12,10 +12,14 @@
 #ifndef RT_VEC3_H
 #define RT_VEC3_H
 
+#include "Eigen/Dense"
 #include <math.h>
 #include <stdlib.h>
 #include <iostream>
 
+using Vec3 = Eigen::Vector3f;
+
+/*
 class Vec3 {
 
 public:
@@ -168,6 +172,24 @@ inline bool operator==(const Vec3 &a, const Vec3 &b) {
 
 inline bool operator!=(const Vec3 &a, const Vec3 &b) {
   return !(a==b);
+}
+*/
+
+
+inline Vec3 cross(const Vec3 &a, const Vec3 &b) {
+  return a.cross(b);
+}
+
+inline float dot(const Vec3 &a, const Vec3 &b) {
+  return a.dot(b);
+}
+
+inline Vec3 unit_vector(const Vec3 &v) {
+  return v/v.norm();
+}
+
+inline Vec3 reflect(const Vec3 &v, const Vec3 &n) {
+  return v - 2.0f * v.dot(n) * n;
 }
 
 #endif

@@ -10,9 +10,9 @@ public:
   TexCoord(float u, float v, float w) : Vec3(u, v, w) {}
   ~TexCoord() {}
 
-  inline float u() const { return e[0]; }
-  inline float v() const { return e[1]; }
-  inline float w() const { return e[2]; }
+  inline float u() const { return x(); }
+  inline float v() const { return y(); }
+  inline float w() const { return z(); }
 };
 
 #endif

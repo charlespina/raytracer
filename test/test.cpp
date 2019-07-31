@@ -28,28 +28,27 @@ TEST_CASE("vec3", "[vec3]") {
   REQUIRE(zero_three[3] == 0);
   REQUIRE(zero_one == zero_three);
 
-  Vec3 one(1.0f);
+  Vec3 one(1, 1, 1);
   REQUIRE(one == one);
 
   REQUIRE(one[0] == 1.0f);
   REQUIRE(one[1] == 1.0f);
   REQUIRE(one[2] == 1.0f);
 
-  REQUIRE((Vec3(1) - Vec3(1)) == Vec3(0));
-  REQUIRE((Vec3(0) + Vec3(1)) == Vec3(1));
-  REQUIRE((Vec3(1) * Vec3(1)) == Vec3(1));
-  REQUIRE((Vec3(1) * 2.0f) == Vec3(2.0f));
+  REQUIRE((Vec3(1, 1, 1) - Vec3(1, 1, 1)) == Vec3(0, 0, 0));
+  REQUIRE((Vec3(0, 0, 0) + Vec3(1, 1, 1)) == Vec3(1, 1, 1));
+  REQUIRE((Vec3::Ones() * 2.0f) == Vec3(2.0f, 2.0f, 2.0f));
 }
 
 TEST_CASE("bounding box", "[aabb]") {
-  AxisAlignedBoundingBox aabb(Vec3(0), Vec3(1));
+  AxisAlignedBoundingBox aabb(Vec3(0, 0, 0), Vec3(1, 1, 1));
 
-  aabb.combine({Vec3(-1), Vec3(2)});
+  aabb.combine({Vec3(-1, -1, -1), Vec3(2, 2, 2)});
 
   std::cout << aabb.min() << std::endl;
 
-  REQUIRE((aabb.min() == Vec3(-1)));
-  REQUIRE((aabb.max() == Vec3(2)));
+  REQUIRE((aabb.min() == Vec3(-1, -1, -1)));
+  REQUIRE((aabb.max() == Vec3(2, 2, 2)));
 }
 
 TEST_CASE("sphere bounding box", "[aabb][sphere]") {
@@ -57,11 +56,11 @@ TEST_CASE("sphere bounding box", "[aabb][sphere]") {
 
   SECTION("simple")
   {
-    Sphere sphere(Vec3(0), 1.0f, nullptr, Vec3(0));
+    Sphere sphere(Vec3(0, 0, 0), 1.0f, nullptr, Vec3(0, 0, 0));
     bool result = sphere.bounding_box(0.0f, 0.0f, box);
     REQUIRE(result);
-    REQUIRE(box.min() == Vec3(-1.0f));
-    REQUIRE(box.max() == Vec3(1.0f));
+    REQUIRE(box.min() == Vec3(-1.0f, -1.0f, -1.0f));
+    REQUIRE(box.max() == Vec3(1, 1, 1));
   }
 
   SECTION("differing origin, moving")
@@ -81,10 +80,10 @@ TEST_CASE("sphere bounding box", "[aabb][sphere]") {
 
 TEST_CASE("bvh", "[bvh]") {
   std::vector<std::shared_ptr<IHitable> > scene = {
-    std::make_shared<Sphere>(Vec3(0), 1, nullptr, Vec3(0)),
-    std::make_shared<Sphere>(Vec3(1), 1, nullptr, Vec3(0)),
-    std::make_shared<Sphere>(Vec3(2), 1, nullptr, Vec3(0)),
-    std::make_shared<Sphere>(Vec3(3), 1, nullptr, Vec3(0, 1, 0)),
+    std::make_shared<Sphere>(Vec3(0.f, 0.f, 0.f), 1.0f, nullptr, Vec3(0.f, 0.f, 0.f)),
+    std::make_shared<Sphere>(Vec3(1.f, 1.f, 1.f), 1.0f, nullptr, Vec3(0.f, 0.f, 0.f)),
+    std::make_shared<Sphere>(Vec3(2.f, 2.f, 2.f), 1.0f, nullptr, Vec3(0.f, 0.f, 0.f)),
+    std::make_shared<Sphere>(Vec3(3.f, 3.f, 3.f), 1.0f, nullptr, Vec3(0.f, 1.f, 0.f)),
   };
 
   auto eval_box = [&scene](float t0, float t1) -> bool {
@@ -96,8 +95,8 @@ TEST_CASE("bvh", "[bvh]") {
 
     REQUIRE(result);
 
-    Vec3 lerped = (1.0f - (t1 - t0)) * Vec3(4) + (t1 - t0) * Vec3(4, 5, 4);
-    REQUIRE(box.min() == Vec3(-1));
+    Vec3 lerped = (1.0f - (t1 - t0)) * Vec3(4, 4, 4) + (t1 - t0) * Vec3(4, 5, 4);
+    REQUIRE(box.min() == Vec3(-1, -1, -1));
     REQUIRE(box.max() == lerped);
     return true;
   };
@@ -108,7 +107,7 @@ TEST_CASE("bvh", "[bvh]") {
 
 TEST_CASE("bvh hit tests", "[bvh][ray]") {
   std::vector<std::shared_ptr<IHitable> > scene = {
-    std::make_shared<Sphere>(Vec3(0), 1, nullptr, Vec3(0)),
+    std::make_shared<Sphere>(Vec3(0.f, 0.f, 0.f), 1.f, nullptr, Vec3(0.f, 0.f, 0.f)),
   };
 
   BvhNode bvh(scene.begin(), scene.end(), 0, 0);

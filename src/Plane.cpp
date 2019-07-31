@@ -26,8 +26,8 @@ bool Plane::hit(const Ray& r, float t_min, float t_max, HitRecord &record) const
  
 bool Plane::bounding_box(float t0, float t1, AxisAlignedBoundingBox& aabb) const {
   AxisAlignedBoundingBox box(
-    {-std::numeric_limits<float>::infinity()}, 
-    {std::numeric_limits<float>::infinity()}
+    {-std::numeric_limits<float>::infinity(), -std::numeric_limits<float>::infinity(), -std::numeric_limits<float>::infinity()}, 
+    { std::numeric_limits<float>::infinity(), std::numeric_limits<float>::infinity(), std::numeric_limits<float>::infinity() }
   );
   aabb = box;
   return true;

@@ -3,8 +3,8 @@
 Rectangle::Rectangle(Vec3 pt0, Vec3 pt1, std::shared_ptr<Material> mat) : _material(mat) {
   Vec3 origin = (pt0 + pt1)/2.0f;
   Vec3 normal = unit_vector(cross(pt0, pt1));
-  float width = 2.0f * (pt0 - origin);
-  float height = 2.0f * (pt1 - origin);
+  // float width = 2.0f * (pt0 - origin);
+  // float height = 2.0f * (pt1 - origin);
   _plane = Plane(origin, normal, _material);
 }
 

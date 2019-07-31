@@ -11,7 +11,7 @@ public:
   virtual ~Texture() {};
   virtual Vec3 sample_color(float u, float v, const Vec3 &p) const = 0;
   float sample_scalar(float u, float v, const Vec3 &p) const {
-    return sample_color(u, v, p).r();
+    return sample_color(u, v, p).x();
   }
 };
 
@@ -34,6 +34,8 @@ public:
   virtual ~ConstantTexture() {}
 
   ConstantTexture(const Vec3 & c) : _color(c) {}
+  ConstantTexture(float v) : ConstantTexture({v, v, v}) {}
+
   Vec3 sample_color(float u, float v, const Vec3 &p) const override {
     return _color;
   }
@@ -67,9 +69,9 @@ class NoiseTexture : public Texture {
 public:
   NoiseTexture() = default;
   virtual Vec3 sample_color(float u, float v, const Vec3 &p) const override {
-    // return Vec3(1.0f) * _perlin.noise(p);
-    // return Vec3(1.0f) * _perlin.turbulent_noise(p);
-    return Vec3(1) * 0.5f * (1.0f + sin(_scale * p.z() + 10.0f * _perlin.turbulent_noise(p)));
+    // return Vec3(1, 1, 1) * _perlin.noise(p);
+    // return Vec3(1, 1, 1) * _perlin.turbulent_noise(p);
+    return Vec3(1, 1, 1) * 0.5f * (1.0f + sin(_scale * p.z() + 10.0f * _perlin.turbulent_noise(p)));
   }
 
 private:

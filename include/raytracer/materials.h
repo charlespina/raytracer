@@ -10,7 +10,7 @@
 class Material {
 public:
   virtual bool scatter(const Ray &iray, const HitRecord &hit, Vec3 &atten, Ray &scattered) const = 0;
-  virtual Vec3 emit(const Ray &iray, const HitRecord &hit) const { return Vec3(0); }
+  virtual Vec3 emit(const Ray &iray, const HitRecord &hit) const { return Vec3(0, 0, 0); }
 };
 
 class Lambertian : public Material {

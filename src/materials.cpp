@@ -53,11 +53,11 @@ bool Dielectric::scatter(const Ray &iray, const HitRecord &hit, Vec3 &attenuatio
   if (dot(iray.direction(), hit.normal) > 0) {
     outward_normal = -hit.normal;
     ni_over_nt = _ior;
-    cosine = _ior * dot(iray.direction(), hit.normal) / iray.direction().length();
+    cosine = _ior * dot(iray.direction(), hit.normal) / iray.direction().norm();
   } else {
     outward_normal = hit.normal;
     ni_over_nt = 1.0f / _ior;
-    cosine = -dot(iray.direction(), hit.normal) / iray.direction().length();
+    cosine = -dot(iray.direction(), hit.normal) / iray.direction().norm();
   }
 
   if (refract(iray.direction(), outward_normal, ni_over_nt, refracted)) {
@@ -90,7 +90,7 @@ std::shared_ptr<Dielectric> create_lens_material() {
 
 Metal::Metal(const Vec3 &color, float roughness)
 : _color(std::make_shared<ConstantTexture>(color))
-, _roughness(std::make_shared<ConstantTexture>(Vec3(roughness)))
+, _roughness(std::make_shared<ConstantTexture>(roughness))
 {}
 
 Metal::Metal(std::shared_ptr<Texture> color, std::shared_ptr<Texture> roughness)
