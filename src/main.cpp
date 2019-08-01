@@ -13,6 +13,7 @@
 #include "raytracer/HitRecord.h"
 #include "raytracer/IHitable.h"
 #include "raytracer/Image.h"
+#include "raytracer/Instance.h"
 #include "raytracer/materials.h"
 #include "raytracer/Plane.h"
 #include "raytracer/random_numbers.h"
@@ -32,11 +33,20 @@ x create bounds for plane
 - sobel lines
 - asm pbr
 - other primitives?
+  x plane
+  x sphere
+  - mesh
+  - rectangle
+  - triangle
 - fractals
 - finish week of raytracer
+x eigen!
   x textures
   x perlin noise
-  - image textures
+  x image textures
+  - instances / transformation
+  - volume material
+  - cornell box
 
 */
 
@@ -44,8 +54,8 @@ x create bounds for plane
 struct Config {
   size_t image_width = 300;
   size_t image_height = 300;
-  size_t max_bounces = 50;
-  size_t samples_per_pixel = 10;
+  size_t max_bounces = 5;
+  size_t samples_per_pixel = 5;
 } config;
 
 Vec3 normal_to_color(const Vec3 &n) {
@@ -184,12 +194,20 @@ std::shared_ptr<Scene> create_nine_sphere_scene() {
 
       auto litter_mat = std::make_shared<Lambertian>(Vec3(random_number(), random_number(), random_number()));
       auto sphere = std::make_shared<Sphere>(
-        center + offset,
+        Vec3(0, 0, 0),
         litter_radius,
         litter_mat,
         Vec3(0.0, velocity_y, 0.0)
       );
-      scene->_geometries.push_back(sphere);
+
+      Eigen::Affine3f transform = Eigen::Translation3f(center + offset) * Eigen::Affine3f::Identity();
+
+      auto instance = std::make_shared<Instance>(
+        sphere,
+        transform
+      );
+
+      scene->_geometries.push_back(instance);
     }
   }
 

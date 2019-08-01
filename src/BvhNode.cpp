@@ -39,11 +39,11 @@ BvhNode::BvhNode(BvhNode::iterator_t list_begin, BvhNode::iterator_t list_end, f
   AxisAlignedBoundingBox box_left, box_right;
   if (!_left->bounding_box(t0, t1, box_left) || !_right->bounding_box(t0, t1, box_right))
     std::cerr << "no bounding box in BvhNode constructor!";
-  _aabb = box_left.combine(box_right);
+  _aabb = box_left.merged(box_right);
 }
 
 bool BvhNode::hit(const Ray& r, float t_min, float t_max, HitRecord &record) const {
-  if (!_aabb.hit(r, t_min, t_max)) return false;
+  if (!aabb_hit(_aabb, r, t_min, t_max)) return false;
 
   HitRecord left_hit, right_hit;
   bool is_left_hit = _left->hit(r, t_min, t_max, left_hit);

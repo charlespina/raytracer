@@ -29,7 +29,7 @@ Sphere::Sphere(const Vec3 &center, float r, std::shared_ptr<Material> mat, Vec3 
 bool Sphere::bounding_box(float t0, float t1, AxisAlignedBoundingBox& aabb) const {
   auto b_t0 = AxisAlignedBoundingBox(center(t0) - _radius * Vec3::Ones(), center(t0) + _radius * Vec3::Ones());
   auto b_t1 = AxisAlignedBoundingBox(center(t1) - _radius * Vec3::Ones(), center(t1) + _radius * Vec3::Ones());
-  aabb = b_t0.combine(b_t1);
+  aabb = b_t0.merged(b_t1);
   return true;
 }
 

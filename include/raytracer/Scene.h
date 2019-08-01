@@ -3,6 +3,7 @@
 
 #include "raytracer/IHitable.h"
 #include "raytracer/HitRecord.h"
+#include <vector>
 
 class Scene : public IHitable {
 public:
@@ -39,7 +40,7 @@ bool Scene::bounding_box(float t0, float t1, AxisAlignedBoundingBox& aabb) const
   aabb = temp_aabb;
   bool all_valid = std::all_of(_geometries.begin(), _geometries.end(), [t0, t1, &temp_aabb, &aabb](const auto &geom) -> bool {
     bool result = geom->bounding_box(t0, t1, temp_aabb);
-    if (result) aabb.combine(temp_aabb);
+    if (result) aabb.extend(temp_aabb);
     return result;
   });
 

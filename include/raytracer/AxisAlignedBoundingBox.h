@@ -3,21 +3,10 @@
 
 #include "raytracer/Vec3.h"
 #include "raytracer/Ray.h"
+#include "Eigen/Dense"
 
-class AxisAlignedBoundingBox {
-public:
-  AxisAlignedBoundingBox() {}
-  AxisAlignedBoundingBox(const Vec3 &imin, const Vec3 &imax);
-  const Vec3 &min() const { return _min; }
-  const Vec3 &max() const { return _max; }
+using AxisAlignedBoundingBox = Eigen::AlignedBox3f;
 
-  bool hit(const Ray& r, float tmin, float tmax) const;
-
-  AxisAlignedBoundingBox& combine(const AxisAlignedBoundingBox &aabb);
-
-protected:
-  Vec3 _min;
-  Vec3 _max;
-};
+bool aabb_hit(const AxisAlignedBoundingBox &box, const Ray& r, float tmin, float tmax);
 
 #endif // header guard

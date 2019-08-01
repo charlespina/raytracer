@@ -43,7 +43,7 @@ TEST_CASE("vec3", "[vec3]") {
 TEST_CASE("bounding box", "[aabb]") {
   AxisAlignedBoundingBox aabb(Vec3(0, 0, 0), Vec3(1, 1, 1));
 
-  aabb.combine({Vec3(-1, -1, -1), Vec3(2, 2, 2)});
+  aabb.extend({Vec3(-1, -1, -1), Vec3(2, 2, 2)});
 
   std::cout << aabb.min() << std::endl;
 
