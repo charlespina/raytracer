@@ -2,6 +2,7 @@
 #include <vector>
 #include <memory>
 #include <random>
+#include <chrono>
 
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb/stb_image.h"
@@ -24,6 +25,27 @@
 #include "raytracer/Rectangle.h"
 #include "raytracer/Vec3.h"
 
+#include "tbb/parallel_for.h"
+
+using Clock = std::chrono::high_resolution_clock;
+
+#define RT_MULTITHREADING_ENABLED 1
+
+void parallel_for(size_t initial_value, size_t count, std::function<void(size_t)> fn) {
+  tbb::parallel_for(initial_value, count, fn);
+}
+
+void serial_for(size_t initial_value, size_t count, std::function<void(size_t)> fn) {
+  for (size_t i=initial_value; i<count; i++) {
+    fn(i);
+  }
+}
+
+#if RT_MULTITHREADING_ENABLED
+#define RT_FOR(...) parallel_for(__VA_ARGS__)
+#else
+#define RT_FOR(...) serial_for(__VA_ARGS__)
+#endif
 
 /* 
 TODO
@@ -39,12 +61,13 @@ x create bounds for plane
   - rectangle
   - triangle
 - fractals
-- finish week of raytracer
+x tbb parallelization
 x eigen!
+- finish week of raytracer
   x textures
   x perlin noise
   x image textures
-  - instances / transformation
+  x instances / transformation
   - volume material
   - cornell box
 
@@ -54,8 +77,8 @@ x eigen!
 struct Config {
   size_t image_width = 300;
   size_t image_height = 300;
-  size_t max_bounces = 5;
-  size_t samples_per_pixel = 5;
+  size_t max_bounces = 50;
+  size_t samples_per_pixel = 100;
 } config;
 
 Vec3 normal_to_color(const Vec3 &n) {
@@ -214,7 +237,13 @@ std::shared_ptr<Scene> create_nine_sphere_scene() {
   return scene;
 }
 
+size_t to_ms(Clock::duration duration) {
+  return std::chrono::duration_cast<std::chrono::milliseconds>(duration).count();
+}
+
 int main(int argc, char **argv) {
+    auto t_start = Clock::now();
+
     Image<float> img(config.image_width, config.image_height);
     
     Camera camera({ 0, 1.5f, 2.75 }, // pos
@@ -231,7 +260,7 @@ int main(int argc, char **argv) {
     float t_end = 0.0f;
     auto bvh = build_bvh(scene->_geometries, t_begin, t_end);
   
-    for (size_t x = 0; x < img._width; x++) {
+    RT_FOR((size_t)0, img._width, [=, &img, &camera](size_t x) {
       for (size_t y = 0; y < img._height; y++) {
         Vec3 color(0, 0, 0);
         
@@ -248,12 +277,16 @@ int main(int argc, char **argv) {
         // a little y-flip
         img.set(x, img._height - y - 1, color);
       }
-    }
+    });
+
+    auto t_render = Clock::now();
+
+    auto t_convert_start = Clock::now();
 
     // convert to output format
     Image<uint8_t> img_out(img._width, img._height);
-    Vec3 v_out;
-    for (size_t x = 0; x < img._width; x++) {
+    RT_FOR(size_t(0), img._width, [&img, &img_out](size_t x) {
+      Vec3 v_out;
       for (size_t y = 0; y < img._height; y++) {
         img.get(x, y, v_out);
 
@@ -271,15 +304,24 @@ int main(int argc, char **argv) {
           (uint8_t)v_out.z()
         );
       }
-    }
+    });
+
+    auto t_convert_end = Clock::now();
+
+    auto t_write_start = Clock::now();
 
     stbi_write_png("./out.png", 
-      img_out._width, 
-      img_out._height, 
+      (int)img_out._width, 
+      (int)img_out._height, 
       RT_IMG_CHANNELS, 
       img_out._data.data(),
-      img_out._width * RT_IMG_CHANNELS);
+      (int)img_out._width * RT_IMG_CHANNELS);
+
+    auto t_write_end = Clock::now();
     
+    std::cout << "render: " << to_ms(t_render - t_start) << " ms" << std::endl;
+    std::cout << "convert: " << to_ms(t_convert_end - t_convert_start) << " ms" << std::endl;
+    std::cout << "write: " << to_ms(t_write_end - t_write_start) << " ms" << std::endl;
     std::cout << "OK" << std::endl;
 
     return 0;

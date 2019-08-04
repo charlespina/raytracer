@@ -1,5 +1,6 @@
 cmake_minimum_required(VERSION 3.13)
 
+
 project (raytracer)
 set (PROJECT_LIB ${PROJECT_NAME}_lib)
 set (MAIN_EXE ${PROJECT_NAME})
@@ -7,9 +8,12 @@ set (TEST_EXE test_${PROJECT_NAME})
 
 set (CMAKE_CXX_STANDARD 14)
 
+# handle conan dependencies
+include(${CMAKE_BINARY_DIR}/conanbuildinfo.cmake)
+conan_basic_setup()
+
 include_directories (
     external/stb/include
-    external/eigen
     include
 )
 
@@ -32,11 +36,11 @@ add_library(${PROJECT_LIB} STATIC ${SOURCES})
 
 # main executable
 add_executable (${MAIN_EXE} src/main.cpp)
-target_link_libraries(${MAIN_EXE} ${PROJECT_LIB})
+target_link_libraries(${MAIN_EXE} ${PROJECT_LIB} ${CONAN_LIBS})
 
 # test executable
 add_executable (${TEST_EXE} test/test.cpp)
-target_link_libraries(${TEST_EXE} ${PROJECT_LIB})
+target_link_libraries(${TEST_EXE} ${PROJECT_LIB} ${CONAN_LIBS})
 target_include_directories(${TEST_EXE} PUBLIC
     external/catch2/include
 )

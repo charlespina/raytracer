@@ -1,0 +1,13 @@
+[requires]
+eigen/3.3.7@conan/stable
+TBB/2019_U4@conan/stable
+
+[generators]
+cmake
+
+[options]
+TBB:shared=True
+
+[imports]
+bin, *.dll -> ./bin # Copies all dll files from the package "bin" folder to project "bin" folder
+lib, *.dylib* -> ./bin # Copies all dylib files from the package "lib" folder to project "bin" folder
