@@ -16,36 +16,17 @@
 #include "raytracer/Image.h"
 #include "raytracer/Instance.h"
 #include "raytracer/materials.h"
+#include "raytracer/multithreading.h"
 #include "raytracer/Plane.h"
 #include "raytracer/random_numbers.h"
 #include "raytracer/Scene.h"
 #include "raytracer/Sphere.h"
+#include "raytracer/Timer.h"
 #include "raytracer/Perlin.h"
 #include "raytracer/Ray.h"
 #include "raytracer/Rectangle.h"
 #include "raytracer/Vec3.h"
 
-#include "tbb/parallel_for.h"
-
-using Clock = std::chrono::high_resolution_clock;
-
-#define RT_MULTITHREADING_ENABLED 1
-
-void parallel_for(size_t initial_value, size_t count, std::function<void(size_t)> fn) {
-  tbb::parallel_for(initial_value, count, fn);
-}
-
-void serial_for(size_t initial_value, size_t count, std::function<void(size_t)> fn) {
-  for (size_t i=initial_value; i<count; i++) {
-    fn(i);
-  }
-}
-
-#if RT_MULTITHREADING_ENABLED
-#define RT_FOR(...) parallel_for(__VA_ARGS__)
-#else
-#define RT_FOR(...) serial_for(__VA_ARGS__)
-#endif
 
 /* 
 TODO
@@ -77,8 +58,8 @@ x eigen!
 struct Config {
   size_t image_width = 300;
   size_t image_height = 300;
-  size_t max_bounces = 50;
-  size_t samples_per_pixel = 100;
+  size_t max_bounces = 8;
+  size_t samples_per_pixel = 50;
 } config;
 
 Vec3 normal_to_color(const Vec3 &n) {
@@ -237,29 +218,28 @@ std::shared_ptr<Scene> create_nine_sphere_scene() {
   return scene;
 }
 
-size_t to_ms(Clock::duration duration) {
-  return std::chrono::duration_cast<std::chrono::milliseconds>(duration).count();
-}
-
 int main(int argc, char **argv) {
-    auto t_start = Clock::now();
+  // commas in numeric output
+  std::cout.imbue(std::locale(""));
 
-    Image<float> img(config.image_width, config.image_height);
-    
-    Camera camera({ 0, 1.5f, 2.75 }, // pos
-      {0, 1.5f, 0}, // target
-      {0, 1, 0}, // up
-      70.0f, // vfov
-      float(img._width)/float(img._height), // aspect
-      0.0f, // aperture
-      2.75f // focus dist
-     );
-    
-    auto scene = create_nine_sphere_scene();
-    float t_begin = 0.0f;
-    float t_end = 0.0f;
-    auto bvh = build_bvh(scene->_geometries, t_begin, t_end);
+  Image<float> img(config.image_width, config.image_height);
   
+  Camera camera({ 0, 1.5f, 2.75 }, // pos
+    {0, 1.5f, 0}, // target
+    {0, 1, 0}, // up
+    70.0f, // vfov
+    float(img._width)/float(img._height), // aspect
+    0.0f, // aperture
+    2.75f // focus dist
+    );
+  
+  auto scene = create_nine_sphere_scene();
+  float t_begin = 0.0f;
+  float t_end = 0.0f;
+  auto bvh = build_bvh(scene->_geometries, t_begin, t_end);
+
+  {
+    Timer render = Timer("render time");
     RT_FOR((size_t)0, img._width, [=, &img, &camera](size_t x) {
       for (size_t y = 0; y < img._height; y++) {
         Vec3 color(0, 0, 0);
@@ -279,12 +259,12 @@ int main(int argc, char **argv) {
       }
     });
 
-    auto t_render = Clock::now();
+    std::cout << "ray count: " << Ray::_ray_count << " rays" << std::endl;
+  }
 
-    auto t_convert_start = Clock::now();
-
-    // convert to output format
-    Image<uint8_t> img_out(img._width, img._height);
+  // convert to output format
+  Image<uint8_t> img_out(img._width, img._height);
+  {
     RT_FOR(size_t(0), img._width, [&img, &img_out](size_t x) {
       Vec3 v_out;
       for (size_t y = 0; y < img._height; y++) {
@@ -305,24 +285,16 @@ int main(int argc, char **argv) {
         );
       }
     });
+  }
 
-    auto t_convert_end = Clock::now();
+  stbi_write_png("./out.png", 
+    (int)img_out._width, 
+    (int)img_out._height, 
+    RT_IMG_CHANNELS, 
+    img_out._data.data(),
+    (int)img_out._width * RT_IMG_CHANNELS);
 
-    auto t_write_start = Clock::now();
+  std::cout << "OK" << std::endl;
 
-    stbi_write_png("./out.png", 
-      (int)img_out._width, 
-      (int)img_out._height, 
-      RT_IMG_CHANNELS, 
-      img_out._data.data(),
-      (int)img_out._width * RT_IMG_CHANNELS);
-
-    auto t_write_end = Clock::now();
-    
-    std::cout << "render: " << to_ms(t_render - t_start) << " ms" << std::endl;
-    std::cout << "convert: " << to_ms(t_convert_end - t_convert_start) << " ms" << std::endl;
-    std::cout << "write: " << to_ms(t_write_end - t_write_start) << " ms" << std::endl;
-    std::cout << "OK" << std::endl;
-
-    return 0;
+  return 0;
 }

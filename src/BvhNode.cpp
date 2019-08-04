@@ -23,7 +23,7 @@ BvhNode::BvhNode(BvhNode::iterator_t list_begin, BvhNode::iterator_t list_end, f
   comparison_fn_t comparator = box_compare(axis);
   std::sort(list_begin, list_end, comparator);
 
-  int n = std::distance(list_begin, list_end);
+  size_t n = std::distance(list_begin, list_end);
 
   if (n == 1)
     _left = _right = *list_begin;
