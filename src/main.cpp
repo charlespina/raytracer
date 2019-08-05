@@ -123,10 +123,11 @@ std::shared_ptr<Scene> create_single_sphere_scene() {
     light_mat
   ));
 
+  /*
   scene->_geometries.push_back(std::make_shared<Rectangle>(Vec3(2.0f, 1.0f, -1.0f),
     Vec3(2.0f, 1.25f, 0.0f),
     noise_mat
-  ));
+  ));*/
 
   float sphere_radius = 1.5f;
   scene->_geometries.push_back(std::make_shared<Sphere>(
@@ -215,6 +216,15 @@ std::shared_ptr<Scene> create_nine_sphere_scene() {
       scene->_geometries.push_back(instance);
     }
   }
+
+  auto rect = std::make_shared<Rectangle>(
+    Vec3(5.0f, 0, 10.0f),
+    Vec3(5.0f, 5.0f, 10.0f),
+    Vec3(-5.0f, 5.0f, 10.0f),
+    Vec3(-5.0f, 0.0f, 10.0f),
+    std::make_shared<Lambertian>(Vec3(0.5f, 0.5f, 0.5f))
+  );
+  scene->_geometries.push_back(rect);
 
   return scene;
 }

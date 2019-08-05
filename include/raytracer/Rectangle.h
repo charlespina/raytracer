@@ -3,23 +3,15 @@
 
 #include "raytracer/IHitable.h"
 #include "raytracer/materials.h"
-#include "raytracer/Plane.h"
+#include "raytracer/Mesh.h"
 #include "raytracer/Vec3.h"
 
 namespace raytracer {
 
-class Rectangle : public IHitable {
+class Rectangle : public Mesh {
 public:
-  Rectangle(Vec3 pt0, Vec3 pt1, std::shared_ptr<Material> material);
-
-  virtual bool hit(const Ray& r, float t_min, float t_max, HitRecord &record) const override;
-  virtual bool bounding_box(float t0, float t1, AxisAlignedBoundingBox& aabb) const override;
-
-private:
-  Plane _plane;
-  float _width;
-  float _height;
-  std::shared_ptr<Material> _material;
+  Rectangle(Vec3 pt0, Vec3 pt1, Vec3 pt2, Vec3 pt3, std::shared_ptr<Material> material);
+  virtual ~Rectangle() {}
 };
 
 } // raytracer
