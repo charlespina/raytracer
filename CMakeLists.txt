@@ -23,6 +23,7 @@ set (SOURCES
     src/Camera.cpp
     src/Instance.cpp
     src/materials.cpp
+    src/Mesh.cpp
     src/random_numbers.cpp
     src/Perlin.cpp
     src/Plane.cpp
