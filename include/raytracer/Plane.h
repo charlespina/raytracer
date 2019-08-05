@@ -4,6 +4,8 @@
 #include "raytracer/IHitable.h"
 #include "raytracer/Vec3.h"
 
+namespace raytracer {
+
 class Plane : public IHitable {
 public:
   Plane() {}
@@ -18,5 +20,6 @@ public:
   std::shared_ptr<Material> _material;
 };
 
-#endif
+} // raytracer
 
+#endif

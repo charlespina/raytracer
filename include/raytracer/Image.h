@@ -7,6 +7,8 @@
 
 #define RT_IMG_CHANNELS 3
 
+namespace raytracer {
+
 template<typename T>
 struct Image {
   Image(size_t width, size_t height)
@@ -61,5 +63,7 @@ struct Image {
   size_t _height;
   std::vector<T> _data;
 };
+
+} // raytracer
 
 #endif

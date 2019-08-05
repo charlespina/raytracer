@@ -4,6 +4,8 @@
 #include <vector>
 #include "raytracer/IHitable.h"
 
+namespace raytracer {
+
 class BvhNode : public IHitable {
 public:
   using iterator_t = std::vector<std::shared_ptr<IHitable> >::iterator;
@@ -22,5 +24,7 @@ private:
   std::shared_ptr<IHitable> _right;
   AxisAlignedBoundingBox _aabb;
 };
+
+} // raytracer
 
 #endif // header guard

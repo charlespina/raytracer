@@ -7,6 +7,8 @@
 #include "raytracer/textures.h"
 #include <memory>
 
+namespace raytracer {
+
 class Material {
 public:
   virtual bool scatter(const Ray &iray, const HitRecord &hit, Vec3 &atten, Ray &scattered) const = 0;
@@ -61,5 +63,7 @@ public:
 std::shared_ptr<Metal> create_mirror_material();
 std::shared_ptr<Dielectric> create_lens_material();
 std::shared_ptr<Lambertian> create_lambert_material();
+
+} // raytracer
 
 #endif

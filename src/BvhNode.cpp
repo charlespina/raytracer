@@ -3,6 +3,8 @@
 #include <algorithm>
 #include <functional>
 
+namespace raytracer {
+
 using comparison_fn_t = std::function<bool(const std::shared_ptr<IHitable> &, const std::shared_ptr<IHitable> &)>;
 
 comparison_fn_t box_compare(int axis) {
@@ -93,3 +95,5 @@ size_t BvhNode::count() const {
   result += count_right();
   return result;
 }
+
+} // raytracer

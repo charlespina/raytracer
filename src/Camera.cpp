@@ -3,6 +3,8 @@
 
 #define PI 3.14159265358979323846f
 
+namespace raytracer {
+
 Camera::Camera(Vec3 position, Vec3 target, Vec3 vup, 
   float vfov, float aspect, float aperture, float focus_distance)
 : _vertical_fov(vfov)
@@ -29,3 +31,5 @@ Ray Camera::get_ray(float s, float t, float time_begin, float time_end) {
   float time = time_begin + random_number() * (time_end - time_begin);
   return Ray(_origin + offset, _lower_left_corner + s * _horizontal + t * _vertical - offset, time);
 }
+
+} // raytracer

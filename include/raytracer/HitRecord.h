@@ -4,6 +4,8 @@
 #include "raytracer/TexCoord.h"
 #include "raytracer/Vec3.h"
 
+namespace raytracer {
+
 class Material;
 struct HitRecord {
   float t;
@@ -12,5 +14,7 @@ struct HitRecord {
   TexCoord texcoord;
   Material *material;
 };
+
+} // raytracer
 
 #endif

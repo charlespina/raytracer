@@ -27,6 +27,7 @@
 #include "raytracer/Rectangle.h"
 #include "raytracer/Vec3.h"
 
+using namespace raytracer;
 
 /* 
 TODO

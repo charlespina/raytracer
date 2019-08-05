@@ -3,6 +3,8 @@
 
 #include "raytracer/Vec3.h"
 
+namespace raytracer {
+
 class TexCoord : public Vec3 {
 public:
   TexCoord() : Vec3(0, 0, 0) {}
@@ -14,5 +16,7 @@ public:
   inline float v() const { return y(); }
   inline float w() const { return z(); }
 };
+
+} // raytracer
 
 #endif

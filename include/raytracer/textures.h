@@ -6,6 +6,8 @@
 #include "raytracer/Vec3.h"
 #include <cmath>
 
+namespace raytracer {
+
 class Texture {
 public:
   virtual ~Texture() {};
@@ -78,5 +80,7 @@ private:
   Perlin _perlin;
   float _scale = 1.0f;
 };
+
+} // raytracer
 
 #endif

@@ -1,5 +1,7 @@
 #include "raytracer/Ray.h"
 
+namespace raytracer {
+
 size_t Ray::_ray_count = 0;
 
 Ray::Ray() {
@@ -13,3 +15,5 @@ Ray::Ray(const Vec3 &origin, const Vec3 &dir, float t) : _origin(origin), _dir(d
 Vec3 Ray::point_at_parameter(float t) const { 
   return _origin + t * _dir; 
 }
+
+} // raytracer

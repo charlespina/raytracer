@@ -17,6 +17,8 @@
 #include <stdlib.h>
 #include <iostream>
 
+namespace raytracer {
+
 using Vec3 = Eigen::Vector3f;
 
 /*
@@ -191,5 +193,7 @@ inline Vec3 unit_vector(const Vec3 &v) {
 inline Vec3 reflect(const Vec3 &v, const Vec3 &n) {
   return v - 2.0f * v.dot(n) * n;
 }
+
+} // raytracer
 
 #endif

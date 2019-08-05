@@ -2,6 +2,8 @@
 
 #include <random>
 
+namespace raytracer {
+
 namespace {
   struct RandomNumberGenerator {
     RandomNumberGenerator()
@@ -40,3 +42,5 @@ Vec3 random_in_unit_disk() {
   } while (dot(p, p) >= 1.0f);
   return p;
 }
+
+} // raytracer

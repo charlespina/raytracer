@@ -3,6 +3,8 @@
 
 #include <chrono>
 
+namespace raytracer {
+
 class Timer {
 public:
   using Clock = std::chrono::high_resolution_clock;
@@ -17,5 +19,7 @@ public:
   std::string _name;
   Clock::time_point _start;
 };
+
+} // raytracer
 
 #endif

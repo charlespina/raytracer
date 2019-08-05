@@ -1,6 +1,8 @@
 #include "raytracer/Instance.h"
 #include <vector>
 
+namespace raytracer {
+
 Instance::Instance(std::shared_ptr<IHitable> hitable, const Eigen::Affine3f &transform)
 : _hitable(hitable)
 {
@@ -57,3 +59,5 @@ bool Instance::bounding_box(float t0, float t1, AxisAlignedBoundingBox &aabb) co
   aabb = result;
   return true;
 }
+
+} // raytracer

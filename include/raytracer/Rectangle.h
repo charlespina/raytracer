@@ -6,6 +6,8 @@
 #include "raytracer/Plane.h"
 #include "raytracer/Vec3.h"
 
+namespace raytracer {
+
 class Rectangle : public IHitable {
 public:
   Rectangle(Vec3 pt0, Vec3 pt1, std::shared_ptr<Material> material);
@@ -19,5 +21,7 @@ private:
   float _height;
   std::shared_ptr<Material> _material;
 };
+
+} // raytracer
 
 #endif

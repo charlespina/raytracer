@@ -5,6 +5,8 @@
 #include "raytracer/HitRecord.h"
 #include <vector>
 
+namespace raytracer {
+
 class Scene : public IHitable {
 public:
   virtual bool hit(const Ray& r, float tmin, float tmax, HitRecord &record) const override;
@@ -46,5 +48,7 @@ bool Scene::bounding_box(float t0, float t1, AxisAlignedBoundingBox& aabb) const
 
   return all_valid;
 }
+
+} // raytracer
 
 #endif

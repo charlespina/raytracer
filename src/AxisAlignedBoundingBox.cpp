@@ -1,6 +1,8 @@
 #include "raytracer/AxisAlignedBoundingBox.h"
 #include <algorithm>
 
+namespace raytracer {
+
 namespace {
   inline float ffmin(float a, float b) {
     return a < b? a : b;
@@ -46,3 +48,5 @@ bool aabb_hit(const AxisAlignedBoundingBox &box, const Ray& r, float tmin, float
 
   return true;
 }
+
+} // raytracer

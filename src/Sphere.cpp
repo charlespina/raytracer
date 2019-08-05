@@ -2,6 +2,8 @@
 
 #define PI 3.14159f
 
+namespace raytracer {
+
 namespace {
   TexCoord get_sphere_texcoord(const Vec3 &p) {
     float phi = atan2(p.z(), p.x());
@@ -72,3 +74,5 @@ bool Sphere::hit(const Ray& r, float t_min, float t_max, HitRecord &record) cons
   
   return false;
 };
+
+} // raytracer

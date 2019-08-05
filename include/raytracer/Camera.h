@@ -5,6 +5,8 @@
 #include "raytracer/Ray.h"
 #include "raytracer/Vec3.h"
 
+namespace raytracer {
+
 class Camera {
 public:
   Camera(Vec3 position, Vec3 target, Vec3 vup, float vertical_fov, float aspect,
@@ -21,5 +23,7 @@ public:
   Vec3 _origin;
   Vec3 _forward, _up, _right;
 };
+
+} // raytracer
 
 #endif

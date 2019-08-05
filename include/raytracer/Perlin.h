@@ -4,6 +4,8 @@
 #include "raytracer/Vec3.h"
 #include <array>
 
+namespace raytracer {
+
 class Perlin {
 public:
   Perlin();
@@ -24,5 +26,7 @@ private:
   permutation_t _permutation_y;
   permutation_t _permutation_z;
 };
+
+} // raytracer
 
 #endif

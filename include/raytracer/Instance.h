@@ -5,6 +5,7 @@
 #include "raytracer/IHitable.h"
 #include <memory>
 
+namespace raytracer {
 
 class Instance : public IHitable {
 public:
@@ -29,5 +30,7 @@ private:
   mat_container_t *_matrices;
   std::shared_ptr<IHitable> _hitable;
 };
+
+} // raytracer
 
 #endif

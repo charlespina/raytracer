@@ -1,5 +1,7 @@
 #include "raytracer/materials.h"
 
+namespace raytracer {
+
 namespace {
   bool refract(const Vec3 &v, const Vec3 &n, float ni_over_nt, Vec3 &refracted) {
     Vec3 uv = unit_vector(v);
@@ -114,3 +116,5 @@ bool DiffuseLight::scatter(const Ray &iray, const HitRecord &hit, Vec3 &attenuat
 Vec3 DiffuseLight::emit(const Ray &iray, const HitRecord &hit) const {
   return _emissive->sample_color(hit.texcoord.u(), hit.texcoord.v(), hit.p);
 }
+
+} // raytracer

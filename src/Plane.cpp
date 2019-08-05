@@ -1,6 +1,8 @@
 #include "raytracer/Plane.h"
 #include "raytracer/Ray.h"
 
+namespace raytracer {
+
 Plane::Plane(const Vec3 &position, const Vec3 &normal, std::shared_ptr<Material> material)
 : _position(position)
 , _normal(normal)
@@ -32,3 +34,5 @@ bool Plane::bounding_box(float t0, float t1, AxisAlignedBoundingBox& aabb) const
   aabb = box;
   return true;
 }
+
+} // raytracer

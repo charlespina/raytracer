@@ -5,6 +5,8 @@
 
 #define RT_MULTITHREADING_ENABLED 1
 
+namespace raytracer {
+
 void parallel_for(size_t initial_value, size_t count, std::function<void(size_t)> fn) {
   tbb::parallel_for(initial_value, count, fn);
 }
@@ -20,5 +22,7 @@ void serial_for(size_t initial_value, size_t count, std::function<void(size_t)> 
 #else
 #define RT_FOR(...) serial_for(__VA_ARGS__)
 #endif
+
+} // raytracer
 
 #endif // header guard

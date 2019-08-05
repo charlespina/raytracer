@@ -2,6 +2,8 @@
 #include "raytracer/random_numbers.h"
 #include <cmath>
 
+namespace raytracer {
+
 namespace {
 
 float trilerp(Vec3 c[2][2][2], float u, float v, float w) {
@@ -51,7 +53,7 @@ Perlin::data_t Perlin::generate() {
 }
 
 void Perlin::permute(permutation_t &p) {
-  for (int i = p.size() - 1; i > 0; i--) {
+  for (int i = (int)p.size() - 1; i > 0; i--) {
     float r = random_number();
     int target = int(r * (i+1));
     int tmp = p[i];
@@ -63,7 +65,7 @@ void Perlin::permute(permutation_t &p) {
 Perlin::permutation_t Perlin::generate_permutation() {
   Perlin::permutation_t p;
   for (size_t i = 0; i < p.size(); i++) {
-    p[i] = i;
+    p[i] = (int)i;
   }
   permute(p);
   return p;
@@ -107,3 +109,5 @@ float Perlin::noise(const Vec3 &p) const {
   
   return trilerp(c, u, v, w);
 }
+
+} // raytracer

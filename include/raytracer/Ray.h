@@ -3,6 +3,8 @@
 
 #include "raytracer/Vec3.h"
 
+namespace raytracer {
+
 struct Ray {
   Ray();
   Ray(const Vec3 &origin, const Vec3 &dir, float t);
@@ -17,5 +19,7 @@ struct Ray {
   float _time;
   static size_t _ray_count;
 };
+
+} // raytracer
 
 #endif // header guard

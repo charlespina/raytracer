@@ -1,5 +1,7 @@
 #include "raytracer/textures.h"
 
+namespace raytracer {
+
 float channel_8bpc_to_float(uint8_t c) {
   float v = c/255.0f;
   return v*v; // poor man's srgb to linear!
@@ -30,3 +32,5 @@ Vec3 ImageTexture::sample_color(float u, float v, const Vec3 &p) const {
   _image.get(x, y, c);
   return c;
 }
+
+} // raytracer

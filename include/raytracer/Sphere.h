@@ -9,6 +9,7 @@
 #include "raytracer/Ray.h"
 #include "raytracer/Vec3.h"
 
+namespace raytracer {
 
 class Sphere : public IHitable {
 public:
@@ -25,5 +26,7 @@ public:
   Vec3 _velocity;
   std::shared_ptr<Material> _material;
 };
+
+} // raytracer
 
 #endif
