@@ -18,12 +18,12 @@ Mesh::Mesh(const std::vector<Vec3> &vertex_triplets) : _vertices(vertex_triplets
 
     Vec3 a = v1 - v0;
     Vec3 b = v2 - v0;
-    _face_normals[tri] = b.cross(a).normalized();
+    _face_normals[tri] = a.cross(b).normalized();
   }
 }
 
 bool Mesh::hit(const Ray& r, float t_min, float t_max, HitRecord &record) const {
-  for (size_t tri=0; tri<_faces.size(); tri+=3) {
+  for (size_t tri=0; tri<_faces.size(); tri++) {
     const Vec3 & N = _face_normals[tri];
 
     const Vec3 &v0 = get_face_vertex(tri, 0);

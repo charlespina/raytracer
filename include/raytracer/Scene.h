@@ -1,6 +1,7 @@
 #ifndef RT_SCENE_H
 #define RT_SCENE_H
 
+#include "raytracer/Camera.h"
 #include "raytracer/IHitable.h"
 #include "raytracer/HitRecord.h"
 #include <vector>
@@ -14,6 +15,7 @@ public:
   virtual ~Scene() {}
   
 public:
+  std::shared_ptr<Camera> _camera;
   std::vector<std::shared_ptr<IHitable> > _geometries;
 };
 

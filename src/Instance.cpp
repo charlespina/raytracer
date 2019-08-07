@@ -3,8 +3,9 @@
 
 namespace raytracer {
 
-Instance::Instance(std::shared_ptr<IHitable> hitable, const Eigen::Affine3f &transform)
+Instance::Instance(std::shared_ptr<IHitable> hitable, const Eigen::Affine3f &transform, std::shared_ptr<Material> mat)
 : _hitable(hitable)
+, _material(mat)
 {
   _matrices = new mat_container_t();
   set_transform(transform);
@@ -29,6 +30,7 @@ bool Instance::hit(const Ray &r, float t_min, float t_max, HitRecord &record) co
   if (did_hit) {
     record.p = _matrices->_transform * record.p;
     record.normal = _matrices->_normal_matrix * record.normal;
+    if (_material) record.material = _material.get(); 
   }
 
   return did_hit;

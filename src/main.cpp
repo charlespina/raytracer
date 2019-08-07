@@ -59,12 +59,23 @@ x eigen!
 struct Config {
   size_t image_width = 300;
   size_t image_height = 300;
-  size_t max_bounces = 8;
-  size_t samples_per_pixel = 50;
+  size_t max_bounces = 100;
+  size_t samples_per_pixel = 8;
 } config;
 
 Vec3 normal_to_color(const Vec3 &n) {
   return 0.5f * (n + Vec3(1.0f, 1.0f, 1.0f));
+}
+
+std::shared_ptr<Camera> create_default_camera(size_t _width, size_t _height) {
+  return std::make_shared<Camera>(Vec3{ 0, 1.5f, 2.75 }, // pos
+    Vec3{0, 1.5f, 0}, // target
+    Vec3{0, 1, 0}, // up
+    70.0f, // vfov
+    float(_width)/float(_height), // aspect
+    0.0f, // aperture
+    2.75f // focus dist
+  );
 }
 
 Vec3 raycast(const Ray &r, IHitable &hitable, size_t depth) {
@@ -217,14 +228,98 @@ std::shared_ptr<Scene> create_nine_sphere_scene() {
     }
   }
 
-  auto rect = std::make_shared<Rectangle>(
-    Vec3(5.0f, 0, 10.0f),
-    Vec3(5.0f, 5.0f, 10.0f),
-    Vec3(-5.0f, 5.0f, 10.0f),
-    Vec3(-5.0f, 0.0f, 10.0f),
-    std::make_shared<Lambertian>(Vec3(0.5f, 0.5f, 0.5f))
+  return scene;
+}
+
+std::shared_ptr<Scene> create_cornell_box() {
+  float room_size = 10.0f;
+  float room_half = room_size/2.0f;
+
+  auto scene = std::make_shared<Scene>();
+  scene->_camera = std::make_shared<Camera>(
+    Vec3(0, room_size/2.0f, 10),
+    Vec3(0, room_size/2.0f, 0),
+    Vec3::UnitY(),
+    70.0f, // vfov
+    1.0f, // aspect
+    0.0f, // aperture
+    2.75f // focus dist
   );
-  scene->_geometries.push_back(rect);
+
+
+  auto lambert_gray = std::make_shared<Lambertian>(Vec3(0.5f, 0.5f, 0.5f));
+  auto lambert_red = std::make_shared<Lambertian>(Vec3(1.0f, 0.0f, 0.0f));
+  auto lambert_green = std::make_shared<Lambertian>(Vec3(0.0f, 1.0f, 0.0f));
+
+  float rect_size = room_size;
+  float rect_half = rect_size/2.0f;
+
+  /* 
+  auto back_wall = std::make_shared<Rectangle>(
+    Vec3(rect_half, 0, -room_size),
+    Vec3(rect_half, rect_size, -room_size),
+    Vec3(-rect_half, rect_size, -room_size),
+    Vec3(-rect_half, 0.0f, -room_size),
+    lambert_gray
+  );
+  */
+
+  // light
+  {
+    float light_size = 3.0f;
+    float light_half = light_size/2.0f;
+    float light_distance = room_half;
+    float light_height = room_size - 0.5f;
+
+    auto light_mat = std::make_shared<DiffuseLight>(std::make_shared<ConstantTexture>(100.0f));
+
+    Eigen::Affine3f light_tx = // Eigen::AngleAxisf(3.1415, Eigen::Vector3f::UnitX()) 
+      Eigen::Affine3f::Identity();
+    
+    scene->_geometries.push_back(std::make_shared<Instance>(std::make_shared<Rectangle>(
+      Vec3(-light_half, light_height, -room_half + light_half),
+      Vec3(-light_half, light_height, -room_half - light_half),
+      Vec3(light_half, light_height, -room_half - light_half),
+      Vec3(light_half, light_height, -room_half + light_half),
+      light_mat
+    ), light_tx));
+  }
+
+  // left wall
+  scene->_geometries.push_back(std::make_shared<Plane>(Vec3(-rect_half, 0.0f, 0.0f),
+    Vec3(1.0f, 0.0f, 0.0f),
+    lambert_red
+  ));
+
+  // right wall
+  scene->_geometries.push_back(std::make_shared<Plane>(Vec3(rect_half, 0.0f, 0.0f),
+    Vec3(-1.0f, 0.0f, 0.0f),
+    lambert_green
+  ));
+
+  // back wall
+  scene->_geometries.push_back(std::make_shared<Plane>(Vec3(0.0f, 0.0f, -rect_size),
+    Vec3(0.0f, 0.0f, 1.0f),
+    lambert_gray
+  ));
+
+  // ground
+  scene->_geometries.push_back(std::make_shared<Plane>(Vec3(0.0f, 0.0f, 0.0f),
+    Vec3(0.0f, 1.0f, 0.0f),
+    lambert_gray
+  ));
+
+  // ceiling
+  scene->_geometries.push_back(std::make_shared<Plane>(Vec3(0.0f, rect_size, 0.0f),
+    Vec3(0.0f, -1.0f, 0.0f),
+    lambert_gray
+  ));
+
+  // rear wall
+  scene->_geometries.push_back(std::make_shared<Plane>(Vec3(0.0f, 0.0f, rect_size + 0.5f),
+    Vec3(0.0f, 0.0f, 1.0f),
+    lambert_gray
+  ));
 
   return scene;
 }
@@ -235,23 +330,16 @@ int main(int argc, char **argv) {
 
   Image<float> img(config.image_width, config.image_height);
   
-  Camera camera({ 0, 1.5f, 2.75 }, // pos
-    {0, 1.5f, 0}, // target
-    {0, 1, 0}, // up
-    70.0f, // vfov
-    float(img._width)/float(img._height), // aspect
-    0.0f, // aperture
-    2.75f // focus dist
-    );
-  
-  auto scene = create_nine_sphere_scene();
+  auto scene = create_cornell_box();
+  if (!scene->_camera) scene->_camera = create_default_camera(img._width, img._height);
+
   float t_begin = 0.0f;
   float t_end = 0.0f;
   auto bvh = build_bvh(scene->_geometries, t_begin, t_end);
-
+ 
   {
     Timer render = Timer("render time");
-    RT_FOR((size_t)0, img._width, [=, &img, &camera](size_t x) {
+    RT_FOR((size_t)0, img._width, [=, &img, &scene](size_t x) {
       for (size_t y = 0; y < img._height; y++) {
         Vec3 color(0, 0, 0);
         
@@ -259,7 +347,7 @@ int main(int argc, char **argv) {
           float u = float(x + random_number()) / float(img._width);
           float v = float(y + random_number()) / float(img._height);
         
-          Ray r = camera.get_ray(u, v, t_begin, t_end);
+          Ray r = scene->_camera->get_ray(u, v, t_begin, t_end);
           color += raycast(r, *bvh.get(), 0);
         }
         
