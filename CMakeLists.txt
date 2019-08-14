@@ -34,6 +34,7 @@ set (SOURCES
     src/Camera.cpp
     src/materials.cpp
     src/objects/BvhNode.cpp
+    src/objects/ConstantMedium.cpp
     src/objects/Group.cpp
     src/objects/Mesh.cpp
     src/objects/MeshRectangle.cpp

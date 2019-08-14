@@ -60,6 +60,18 @@ public:
 
 };
 
+class Isotropic : public Material {
+public:
+  Isotropic(std::shared_ptr<Texture> texture) : _albedo(texture) {}
+  virtual bool scatter(const Ray &iray, const HitRecord &hit, Vec3 &attenuation, Ray &scattered) const override {
+    scattered = Ray(hit.p, random_in_unit_sphere().normalized());
+    attenuation = _albedo->sample_color(hit.texcoord.x(), hit.texcoord.y(), hit.p);
+    return true; 
+  }
+public:
+  std::shared_ptr<Texture> _albedo;
+};
+
 std::shared_ptr<Metal> create_mirror_material();
 std::shared_ptr<Dielectric> create_lens_material();
 std::shared_ptr<Lambertian> create_lambert_material();
