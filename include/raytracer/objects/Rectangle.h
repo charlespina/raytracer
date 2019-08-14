@@ -1,9 +1,9 @@
 #ifndef RT_RECTANGLE_H
 #define RT_RECTANGLE_H
 
-#include "raytracer/IHitable.h"
 #include "raytracer/materials.h"
-#include "raytracer/Mesh.h"
+#include "raytracer/objects/IObject.h"
+#include "raytracer/objects/Mesh.h"
 #include "raytracer/Vec3.h"
 
 namespace raytracer {

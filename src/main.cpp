@@ -9,25 +9,30 @@
 #define STB_IMAGE_WRITE_IMPLEMENTATION
 #include "stb/stb_image_write.h"
 
-#include "raytracer/BvhNode.h"
 #include "raytracer/Camera.h"
 #include "raytracer/HitRecord.h"
-#include "raytracer/IHitable.h"
 #include "raytracer/Image.h"
-#include "raytracer/Instance.h"
 #include "raytracer/materials.h"
 #include "raytracer/multithreading.h"
-#include "raytracer/Plane.h"
+#include "raytracer/objects/BvhNode.h"
+#include "raytracer/objects/IObject.h"
+#include "raytracer/objects/ObjectInstance.h"
+#include "raytracer/objects/Plane.h"
+#include "raytracer/objects/Rectangle.h"
+#include "raytracer/objects/Scene.h"
+#include "raytracer/objects/Sphere.h"
 #include "raytracer/random_numbers.h"
-#include "raytracer/Scene.h"
-#include "raytracer/Sphere.h"
 #include "raytracer/Timer.h"
 #include "raytracer/Perlin.h"
 #include "raytracer/Ray.h"
-#include "raytracer/Rectangle.h"
 #include "raytracer/Vec3.h"
 
 using namespace raytracer;
+
+template<typename T>
+T lerp(const T&a, const T&b, float t) {
+  return (1.0f - t) * a + t * b;
+}
 
 /* 
 TODO
@@ -60,7 +65,7 @@ struct Config {
   size_t image_width = 300;
   size_t image_height = 300;
   size_t max_bounces = 100;
-  size_t samples_per_pixel = 8;
+  size_t samples_per_pixel = 30;
 } config;
 
 Vec3 normal_to_color(const Vec3 &n) {
@@ -68,29 +73,30 @@ Vec3 normal_to_color(const Vec3 &n) {
 }
 
 std::shared_ptr<Camera> create_default_camera(size_t _width, size_t _height) {
-  return std::make_shared<Camera>(Vec3{ 0, 1.5f, 2.75 }, // pos
-    Vec3{0, 1.5f, 0}, // target
-    Vec3{0, 1, 0}, // up
+
+  Eigen::Affine3f camera_tx = Eigen::Translation3f( 0, 1.5f, 2.75 ) * Eigen::Affine3f::Identity();
+
+  return std::shared_ptr<Camera>(new Camera(camera_tx,
     70.0f, // vfov
     float(_width)/float(_height), // aspect
     0.0f, // aperture
     2.75f // focus dist
-  );
+  ));
 }
 
-Vec3 raycast(const Ray &r, IHitable &hitable, size_t depth) {
+Vec3 raycast(const Ray &r, IObject &hitable, size_t depth) {
   HitRecord record;
   if (hitable.hit(r, 0.001f, std::numeric_limits<float>::max(), record)) {
     Ray scattered;
     Vec3 accumulated(0, 0, 0);
-
-    Vec3 emitted = record.material->emit(r, record);
-    accumulated += emitted;
   
     Vec3 attenuation;
     if (depth < config.max_bounces && record.material->scatter(r, record, attenuation, scattered)) {
       accumulated += (attenuation.array() * raycast(scattered, hitable, depth + 1).array()).matrix();
     }
+
+    Vec3 emitted = record.material->emit(r, record);
+    accumulated += emitted;
 
     return accumulated;
   } else {
@@ -100,7 +106,7 @@ Vec3 raycast(const Ray &r, IHitable &hitable, size_t depth) {
   }
 }
 
-std::shared_ptr<BvhNode> build_bvh(std::vector<std::shared_ptr<IHitable> > geoms, float t0, float t1) {
+std::shared_ptr<BvhNode> build_bvh(std::vector<std::shared_ptr<IObject> > geoms, float t0, float t1) {
   auto copied_geom_list = geoms;
   return std::make_shared<BvhNode>(copied_geom_list.begin(), copied_geom_list.end(), t0, t1);
 }
@@ -219,7 +225,7 @@ std::shared_ptr<Scene> create_nine_sphere_scene() {
 
       Eigen::Affine3f transform = Eigen::Translation3f(center + offset) * Eigen::Affine3f::Identity();
 
-      auto instance = std::make_shared<Instance>(
+      auto instance = std::make_shared<ObjectInstance>(
         sphere,
         transform
       );
@@ -236,15 +242,17 @@ std::shared_ptr<Scene> create_cornell_box() {
   float room_half = room_size/2.0f;
 
   auto scene = std::make_shared<Scene>();
-  scene->_camera = std::make_shared<Camera>(
-    Vec3(0, room_size/2.0f, 10),
-    Vec3(0, room_size/2.0f, 0),
-    Vec3::UnitY(),
+
+  Eigen::Affine3f camera_tx = Eigen::Translation3f(0, room_size/2.0f, 10)
+    * Eigen::Affine3f::Identity();
+
+  scene->_camera = std::shared_ptr<Camera>(new Camera(
+    camera_tx,
     70.0f, // vfov
     1.0f, // aspect
     0.0f, // aperture
     2.75f // focus dist
-  );
+  ));
 
 
   auto lambert_gray = std::make_shared<Lambertian>(Vec3(0.5f, 0.5f, 0.5f));
@@ -254,37 +262,93 @@ std::shared_ptr<Scene> create_cornell_box() {
   float rect_size = room_size;
   float rect_half = rect_size/2.0f;
 
-  /* 
-  auto back_wall = std::make_shared<Rectangle>(
-    Vec3(rect_half, 0, -room_size),
-    Vec3(rect_half, rect_size, -room_size),
-    Vec3(-rect_half, rect_size, -room_size),
-    Vec3(-rect_half, 0.0f, -room_size),
-    lambert_gray
-  );
-  */
-
   // light
   {
-    float light_size = 3.0f;
+    float light_size = 5.0f;
     float light_half = light_size/2.0f;
     float light_distance = room_half;
-    float light_height = room_size - 0.5f;
+    float light_height = room_size - 0.1f;
 
     auto light_mat = std::make_shared<DiffuseLight>(std::make_shared<ConstantTexture>(100.0f));
 
-    Eigen::Affine3f light_tx = // Eigen::AngleAxisf(3.1415, Eigen::Vector3f::UnitX()) 
+    Eigen::Affine3f light_tx = 
+      Eigen::Translation3f(0, 15.0f, -light_distance) *
+      // Eigen::AngleAxisf(3.1415f, Eigen::Vector3f::UnitX()) * 
+      Eigen::Scaling(light_size) *
       Eigen::Affine3f::Identity();
     
-    scene->_geometries.push_back(std::make_shared<Instance>(std::make_shared<Rectangle>(
-      Vec3(-light_half, light_height, -room_half + light_half),
-      Vec3(-light_half, light_height, -room_half - light_half),
-      Vec3(light_half, light_height, -room_half - light_half),
-      Vec3(light_half, light_height, -room_half + light_half),
+    scene->_geometries.push_back(std::make_shared<ObjectInstance>(std::make_shared<Rectangle>(
+      Vec3(-0.5f, 0, 0.5f),
+      Vec3(-0.5f, 0, -0.5f),
+      Vec3(0.5f, 0, -0.5f),
+      Vec3(0.5f, 0, 0.5f),
       light_mat
     ), light_tx));
+
+    size_t num_instances = 1;
+    std::array<Vec3, 5> colors = {
+      Vec3(1, 0, 0),
+      Vec3(1, 1, 0).normalized(),
+      Vec3(0, 1, 0),
+      Vec3(0, 0, 1),
+      Vec3(0, 1, 1).normalized(),
+    };
+
+    bool use_instances = true;
+    for (size_t i=0; i<num_instances; i++) {
+      float t = i/(float)(num_instances-1);
+      auto light_mat = std::make_shared<DiffuseLight>(std::make_shared<ConstantTexture>(100.0f));
+      auto mat = std::make_shared<Lambertian>(std::make_shared<ConstantTexture>(colors[i % colors.size()]));
+      float sphere_size = 1.2f;
+      auto sphere = std::make_shared<Sphere>(Vec3(0, 0, 0), 1.0f, mat);
+
+      // spiral
+      {
+        float d = lerp(0.0f, room_size/2.0f - sphere_size/2.0f, t);
+        float turns = 2.0f;
+        Vec3 point_of_interest = Vec3(0, room_size/2.0f, -light_distance);
+        Eigen::Affine3f spiral_tx = 
+          Eigen::Translation3f(point_of_interest) * 
+          Eigen::AngleAxisf(turns * 3.1415f * t, Eigen::Vector3f::UnitZ()) * 
+          Eigen::Translation3f(d, 0, 0) *
+          Eigen::Scaling(sphere_size) *
+          Eigen::Affine3f::Identity();
+
+        if (use_instances) {
+          scene->_geometries.push_back(std::make_shared<ObjectInstance>(sphere, spiral_tx));
+        } else {
+          scene->_geometries.push_back(std::make_shared<Sphere>(
+            spiral_tx * Vec3(0, 0, 0),
+            sphere_size,
+            mat
+          ));
+        }
+      }
+
+      // column
+      {
+        Vec3 offset = lerp(Vec3(0, 0, 0), Vec3(0, 10, 0), t);
+        Vec3 point_of_interest = Vec3(0, 0.0f, -light_distance/4.0f);
+        Eigen::Affine3f column_tx =
+          Eigen::Translation3f(offset) *
+          Eigen::Translation3f(point_of_interest) *
+          Eigen::Scaling(sphere_size) *
+          Eigen::Affine3f::Identity();
+
+        if (use_instances) {
+          scene->_geometries.push_back(std::make_shared<ObjectInstance>(sphere, column_tx));
+        } else {
+          scene->_geometries.push_back(std::make_shared<Sphere>(
+            column_tx * Vec3(0, 0, 0),
+            sphere_size,
+            mat
+          ));
+        }
+      }
+    }
   }
 
+  /*
   // left wall
   scene->_geometries.push_back(std::make_shared<Plane>(Vec3(-rect_half, 0.0f, 0.0f),
     Vec3(1.0f, 0.0f, 0.0f),
@@ -302,13 +366,6 @@ std::shared_ptr<Scene> create_cornell_box() {
     Vec3(0.0f, 0.0f, 1.0f),
     lambert_gray
   ));
-
-  // ground
-  scene->_geometries.push_back(std::make_shared<Plane>(Vec3(0.0f, 0.0f, 0.0f),
-    Vec3(0.0f, 1.0f, 0.0f),
-    lambert_gray
-  ));
-
   // ceiling
   scene->_geometries.push_back(std::make_shared<Plane>(Vec3(0.0f, rect_size, 0.0f),
     Vec3(0.0f, -1.0f, 0.0f),
@@ -320,6 +377,42 @@ std::shared_ptr<Scene> create_cornell_box() {
     Vec3(0.0f, 0.0f, 1.0f),
     lambert_gray
   ));
+
+  */
+
+  // plane ground
+  /*
+  scene->_geometries.push_back(std::make_shared<Plane>(Vec3(0.0f, 0.0f, 0.0f),
+    Vec3(0.0f, 1.0f, 0.0f),
+    lambert_gray
+  ));
+  */
+
+  // sphere ground
+  scene->_geometries.push_back(std::make_shared<Sphere>(
+    Vec3(0, -100, 0),
+    100.0f,
+    lambert_gray
+  ));
+
+  // rect ground
+  /*
+  std::array<Vec3, 4> pts = {
+    Vec3(-10.0f, 0, 10.0f),
+    Vec3(-10.0f, 0, -10.0f),
+    Vec3(10.0f, 0, -10.0f),
+    Vec3(10.0f, 0, 10.0f)
+  };
+
+  for (const auto &pt : pts) {
+    scene->_geometries.push_back(std::make_shared<Sphere>(pt, 0.1f, std::make_shared<Lambertian>(std::make_shared<ConstantTexture>(Vec3(0, 0, 0)))));
+  }
+
+  auto rect = std::make_shared<Rectangle>(
+    pts[0], pts[1], pts[2], pts[3],
+    lambert_gray);
+  scene->_geometries.push_back(rect);
+  */
 
   return scene;
 }

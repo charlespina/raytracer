@@ -2,9 +2,9 @@
 #include "catch2/catch.hpp"
 
 #include "raytracer/AxisAlignedBoundingBox.h"
-#include "raytracer/BvhNode.h"
 #include "raytracer/Image.h"
-#include "raytracer/Sphere.h"
+#include "raytracer/objects/BvhNode.h"
+#include "raytracer/objects/Sphere.h"
 #include "raytracer/textures.h"
 #include "raytracer/Vec3.h"
 
@@ -81,7 +81,7 @@ TEST_CASE("sphere bounding box", "[aabb][sphere]") {
 }
 
 TEST_CASE("bvh", "[bvh]") {
-  std::vector<std::shared_ptr<IHitable> > scene = {
+  std::vector<std::shared_ptr<IObject> > scene = {
     std::make_shared<Sphere>(Vec3(0.f, 0.f, 0.f), 1.0f, nullptr, Vec3(0.f, 0.f, 0.f)),
     std::make_shared<Sphere>(Vec3(1.f, 1.f, 1.f), 1.0f, nullptr, Vec3(0.f, 0.f, 0.f)),
     std::make_shared<Sphere>(Vec3(2.f, 2.f, 2.f), 1.0f, nullptr, Vec3(0.f, 0.f, 0.f)),
@@ -108,7 +108,7 @@ TEST_CASE("bvh", "[bvh]") {
 }
 
 TEST_CASE("bvh hit tests", "[bvh][ray]") {
-  std::vector<std::shared_ptr<IHitable> > scene = {
+  std::vector<std::shared_ptr<IObject> > scene = {
     std::make_shared<Sphere>(Vec3(0.f, 0.f, 0.f), 1.f, nullptr, Vec3(0.f, 0.f, 0.f)),
   };
 

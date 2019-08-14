@@ -9,7 +9,8 @@ namespace raytracer {
 
 class Camera {
 public:
-  Camera(Vec3 position, Vec3 target, Vec3 vup, float vertical_fov, float aspect,
+  EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+  Camera(Eigen::Affine3f transform,  float vertical_fov, float aspect,
     float aperture, float focus_distance);
   Ray get_ray(float u, float v, float t_begin=0.0f, float t_end=0.0f);
   
@@ -21,7 +22,9 @@ public:
   Vec3 _horizontal;
   Vec3 _vertical;
   Vec3 _origin;
-  Vec3 _forward, _up, _right;
+  Vec3 _right;
+  Vec3 _up;
+  Eigen::Affine3f _transform;
 };
 
 } // raytracer

@@ -1,4 +1,4 @@
-#include "raytracer/Sphere.h"
+#include "raytracer/objects/Sphere.h"
 
 #define PI 3.14159f
 

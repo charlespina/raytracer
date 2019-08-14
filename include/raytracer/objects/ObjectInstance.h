@@ -1,17 +1,17 @@
-#ifndef RT_INSTANCE_H
-#define RT_INSTANCE_H
+#ifndef RT_OBJECTINSTANCE_H
+#define RT_OBJECTINSTANCE_H
 
 #include "Eigen/Dense"
-#include "raytracer/IHitable.h"
+#include "raytracer/objects/IObject.h"
 #include <memory>
 
 namespace raytracer {
 
-class Instance : public IHitable {
+class ObjectInstance : public IObject {
 public:
 
-  Instance(std::shared_ptr<IHitable> hitable, const Eigen::Affine3f &transform, std::shared_ptr<Material> mat=nullptr);
-  virtual ~Instance() {}
+  ObjectInstance(std::shared_ptr<IObject> hitable, const Eigen::Affine3f &transform, std::shared_ptr<Material> mat=nullptr);
+  virtual ~ObjectInstance() {}
   virtual bool hit(const Ray& r, float t_min, float t_max, HitRecord &record) const override;
   virtual bool bounding_box(float t0, float t1, AxisAlignedBoundingBox& aabb) const override;
 
@@ -28,7 +28,7 @@ private:
   };
 
   mat_container_t *_matrices;
-  std::shared_ptr<IHitable> _hitable;
+  std::shared_ptr<IObject> _hitable;
   std::shared_ptr<Material> _material;
 };
 

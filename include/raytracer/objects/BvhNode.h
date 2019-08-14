@@ -2,13 +2,13 @@
 #define RT_BVHNODE_H
 
 #include <vector>
-#include "raytracer/IHitable.h"
+#include "raytracer/objects/IObject.h"
 
 namespace raytracer {
 
-class BvhNode : public IHitable {
+class BvhNode : public IObject {
 public:
-  using iterator_t = std::vector<std::shared_ptr<IHitable> >::iterator;
+  using iterator_t = std::vector<std::shared_ptr<IObject> >::iterator;
 
   BvhNode() {}
   BvhNode(iterator_t list_begin, iterator_t list_end, float t0, float t1);
@@ -20,8 +20,8 @@ public:
   size_t count_right() const;
 
 private:
-  std::shared_ptr<IHitable> _left;
-  std::shared_ptr<IHitable> _right;
+  std::shared_ptr<IObject> _left;
+  std::shared_ptr<IObject> _right;
   AxisAlignedBoundingBox _aabb;
 };
 

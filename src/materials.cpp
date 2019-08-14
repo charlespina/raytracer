@@ -114,7 +114,9 @@ bool DiffuseLight::scatter(const Ray &iray, const HitRecord &hit, Vec3 &attenuat
 }
 
 Vec3 DiffuseLight::emit(const Ray &iray, const HitRecord &hit) const {
-  return _emissive->sample_color(hit.texcoord.u(), hit.texcoord.v(), hit.p);
+  float t = hit.t; // (hit.p - iray.origin()).norm();
+  float falloff = 1.0f / (t * t + 1.0f); 
+  return falloff * _emissive->sample_color(hit.texcoord.u(), hit.texcoord.v(), hit.p);
 }
 
 } // raytracer

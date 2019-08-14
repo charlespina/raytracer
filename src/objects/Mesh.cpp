@@ -1,4 +1,4 @@
-#include "raytracer/Mesh.h"
+#include "raytracer/objects/Mesh.h"
 #include <cassert>
 
 namespace raytracer {
@@ -69,9 +69,11 @@ bool Mesh::hit(const Ray& r, float t_min, float t_max, HitRecord &record) const 
 }
 
 bool Mesh::bounding_box(float t0, float t1, AxisAlignedBoundingBox& aabb) const {
+  AxisAlignedBoundingBox box;
   for (const auto &v : _vertices) {
-    aabb.extend(v);
+    box.extend(v);
   }
+  aabb = box;
   return true;
 }
 

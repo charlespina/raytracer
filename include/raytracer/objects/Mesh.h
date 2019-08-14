@@ -1,14 +1,14 @@
 #ifndef RT_MESH_H
 #define RT_MESH_H
 
-#include "raytracer/IHitable.h"
 #include "raytracer/materials.h"
-#include "raytracer/Plane.h"
+#include "raytracer/objects/IObject.h"
+#include "raytracer/objects/Plane.h"
 #include "raytracer/Vec3.h"
 
 namespace raytracer {
 
-class Mesh : public IHitable {
+class Mesh : public IObject {
 public:
   struct Face {
     Face()

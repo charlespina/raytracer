@@ -1,4 +1,4 @@
-#include "raytracer/Plane.h"
+#include "raytracer/objects/Plane.h"
 #include "raytracer/Ray.h"
 
 namespace raytracer {

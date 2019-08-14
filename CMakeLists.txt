@@ -31,17 +31,17 @@ include_directories (
 
 set (SOURCES
     src/AxisAlignedBoundingBox.cpp
-    src/BvhNode.cpp
     src/Camera.cpp
-    src/Instance.cpp
     src/materials.cpp
-    src/Mesh.cpp
+    src/objects/BvhNode.cpp
+    src/objects/Mesh.cpp
+    src/objects/ObjectInstance.cpp
+    src/objects/Plane.cpp
+    src/objects/Rectangle.cpp
+    src/objects/Sphere.cpp
     src/random_numbers.cpp
     src/Perlin.cpp
-    src/Plane.cpp
     src/Ray.cpp
-    src/Rectangle.cpp
-    src/Sphere.cpp
     src/textures.cpp
 )
 

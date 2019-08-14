@@ -2,13 +2,13 @@
 #define RT_SCENE_H
 
 #include "raytracer/Camera.h"
-#include "raytracer/IHitable.h"
 #include "raytracer/HitRecord.h"
+#include "raytracer/objects/IObject.h"
 #include <vector>
 
 namespace raytracer {
 
-class Scene : public IHitable {
+class Scene : public IObject {
 public:
   virtual bool hit(const Ray& r, float tmin, float tmax, HitRecord &record) const override;
   virtual bool bounding_box(float t0, float t1, AxisAlignedBoundingBox& aabb) const override;
@@ -16,7 +16,7 @@ public:
   
 public:
   std::shared_ptr<Camera> _camera;
-  std::vector<std::shared_ptr<IHitable> > _geometries;
+  std::vector<std::shared_ptr<IObject> > _geometries;
 };
 
 bool Scene::hit(const Ray& r, float t_min, float t_max, HitRecord &record) const {

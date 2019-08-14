@@ -1,9 +1,9 @@
-#include "raytracer/Instance.h"
+#include "raytracer/objects/ObjectInstance.h"
 #include <vector>
 
 namespace raytracer {
 
-Instance::Instance(std::shared_ptr<IHitable> hitable, const Eigen::Affine3f &transform, std::shared_ptr<Material> mat)
+ObjectInstance::ObjectInstance(std::shared_ptr<IObject> hitable, const Eigen::Affine3f &transform, std::shared_ptr<Material> mat)
 : _hitable(hitable)
 , _material(mat)
 {
@@ -11,17 +11,17 @@ Instance::Instance(std::shared_ptr<IHitable> hitable, const Eigen::Affine3f &tra
   set_transform(transform);
 }
 
-void Instance::set_transform(const Eigen::Affine3f &transform) {
+void ObjectInstance::set_transform(const Eigen::Affine3f &transform) {
   _matrices->_transform = transform;
   _matrices->_inverse_transform = transform.inverse();
   _matrices->_normal_matrix = _matrices->_inverse_transform.linear().transpose();
   _matrices->_inverse_normal_matrix = _matrices->_inverse_transform.linear().inverse().transpose();
 }
 
-bool Instance::hit(const Ray &r, float t_min, float t_max, HitRecord &record) const {
+bool ObjectInstance::hit(const Ray &r, float t_min, float t_max, HitRecord &record) const {
   // transform ray to object space, since hit function is not aware of instance transform
   Vec3 o = _matrices->_inverse_transform * r.origin();
-  Vec3 d = _matrices->_inverse_normal_matrix * r.direction();
+  Vec3 d = (_matrices->_inverse_normal_matrix * r.direction()).normalized();
   Ray ray_object(o, d, r.time());
 
   bool did_hit = _hitable->hit(ray_object, t_min, t_max, record);
@@ -30,13 +30,15 @@ bool Instance::hit(const Ray &r, float t_min, float t_max, HitRecord &record) co
   if (did_hit) {
     record.p = _matrices->_transform * record.p;
     record.normal = _matrices->_normal_matrix * record.normal;
+    // original t is along transformed ray - we can effectively get the t of actual ray by getting the distance between the hit and origin
+    record.t = (record.p - r.origin()).norm();
     if (_material) record.material = _material.get(); 
   }
 
   return did_hit;
 }
 
-bool Instance::bounding_box(float t0, float t1, AxisAlignedBoundingBox &aabb) const {
+bool ObjectInstance::bounding_box(float t0, float t1, AxisAlignedBoundingBox &aabb) const {
   static std::vector<AxisAlignedBoundingBox::CornerType> corners = {
     AxisAlignedBoundingBox::BottomLeftCeil,
     AxisAlignedBoundingBox::BottomLeftFloor,

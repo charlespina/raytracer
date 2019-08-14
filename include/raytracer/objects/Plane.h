@@ -1,12 +1,12 @@
 #ifndef RT_PLANE_H
 #define RT_PLANE_H
 
-#include "raytracer/IHitable.h"
+#include "raytracer/objects/IObject.h"
 #include "raytracer/Vec3.h"
 
 namespace raytracer {
 
-class Plane : public IHitable {
+class Plane : public IObject {
 public:
   Plane() {}
   Plane(const Vec3 &position, const Vec3 &normal, std::shared_ptr<Material> material);
