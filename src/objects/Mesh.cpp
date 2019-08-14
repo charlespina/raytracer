@@ -3,8 +3,10 @@
 
 namespace raytracer {
 
-Mesh::Mesh(const std::vector<Vec3> &vertex_triplets) : _vertices(vertex_triplets) {
+Mesh::Mesh(const std::vector<Vec3> &vertex_triplets) { 
   assert(vertex_triplets.size() % 3 == 0);
+  _vertices = vertex_triplets;
+  assert(_vertices.size() == vertex_triplets.size());
   _faces.resize(vertex_triplets.size() / size_t(3));
   _face_normals.resize(_faces.size());
   for (size_t tri=0; tri<_faces.size(); tri++) {
@@ -23,48 +25,51 @@ Mesh::Mesh(const std::vector<Vec3> &vertex_triplets) : _vertices(vertex_triplets
 }
 
 bool Mesh::hit(const Ray& r, float t_min, float t_max, HitRecord &record) const {
+  float closest_t = std::numeric_limits<float>::max();
+
   for (size_t tri=0; tri<_faces.size(); tri++) {
     const Vec3 & N = _face_normals[tri];
 
     const Vec3 &v0 = get_face_vertex(tri, 0);
     const Vec3 &v1 = get_face_vertex(tri, 1);
     const Vec3 &v2 = get_face_vertex(tri, 2);
-    float D = N.dot(v0);
-    float denom = N.dot(r.direction());
 
-    if (std::abs(denom) < std::numeric_limits<float>::epsilon())
-      continue; // ray is parallel to triangle
+    Vec3 edge1 = v1 - v0;
+    Vec3 edge2 = v2 - v0;
+    Vec3 h = r.direction().cross(edge2);
+
+    float a = edge1.dot(h);
+    if (std::abs(a) < std::numeric_limits<float>::epsilon())
+      continue; // ray parallel to tri
     
-    float t = (N.dot(r.origin()) + D)
-      / denom;
-
-    if (t < t_min || t > t_max) 
-      continue; // outside of area of interest
-
-    if (t < 0)
-      continue; // intersection is along ray in the wrong direction
+    float f = 1.0f/a;
+    Vec3 s = r.origin() - v0;
+    float u = f * s.dot(h);
+    if (u < 0.0f || u > 1.0f)
+      continue;
     
-    Vec3 P = r.point_at_parameter(t);
+    Vec3 q = s.cross(edge1);
+    float v = f * r.direction().dot(q);
+    if (v < 0.0f || (u + v) > 1.0f)
+      continue;
     
-    Vec3 edge0 = v1 - v0;
-    Vec3 edge1 = v2 - v1;
-    Vec3 edge2 = v0 - v2;
-    Vec3 C0 = P - v0;
-    Vec3 C1 = P - v1;
-    Vec3 C2 = P - v2;
+    float t = f * edge2.dot(q);
+    if (t < std::numeric_limits<float>::epsilon())
+      continue; // line intersection, but not ray
+    
+    if (t < t_min || t > t_max)
+      continue;
+    
+    if (t > closest_t)
+      continue;
 
-    if ( N.dot(edge0.cross(C0)) > 0
-      && N.dot(edge1.cross(C1)) > 0
-      && N.dot(edge2.cross(C2)) > 0
-    ) {
-      // a hit!
-      record.p = P;
-      record.t = t;
-      record.normal = N;
-      record.material = _material.get();
-      return true;
-    }
+    record.p = r.point_at_parameter(t);
+    closest_t = record.t = t;
+    record.normal = N;
+    record.material = _material.get();
+    return true;
   }
+
   return false;
 }
 

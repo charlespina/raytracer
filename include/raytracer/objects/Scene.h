@@ -4,52 +4,23 @@
 #include "raytracer/Camera.h"
 #include "raytracer/HitRecord.h"
 #include "raytracer/objects/IObject.h"
+#include "raytracer/objects/Group.h"
 #include <vector>
 
 namespace raytracer {
 
-class Scene : public IObject {
+class Scene : public Group {
 public:
-  virtual bool hit(const Ray& r, float tmin, float tmax, HitRecord &record) const override;
-  virtual bool bounding_box(float t0, float t1, AxisAlignedBoundingBox& aabb) const override;
+  template<typename ObjectType, typename ... Args>
+  void create_object(Args && ...args) {
+    add_object(std::make_shared<ObjectType>(std::forward<Args>(args)...));
+  }
+
   virtual ~Scene() {}
   
 public:
   std::shared_ptr<Camera> _camera;
-  std::vector<std::shared_ptr<IObject> > _geometries;
 };
-
-bool Scene::hit(const Ray& r, float t_min, float t_max, HitRecord &record) const {
-  bool hit_anything = false;
-  float closest_so_far = t_max;
-  HitRecord temp_record;
-  for (const auto &geom : _geometries) {
-    if (geom->hit(r, t_min, closest_so_far, temp_record)) {
-      hit_anything = true;
-      closest_so_far = temp_record.t;
-      record = temp_record;
-    }
-  }
-  return hit_anything;
-}
-
-bool Scene::bounding_box(float t0, float t1, AxisAlignedBoundingBox& aabb) const {
-  if (_geometries.empty()) return false;
-
-  AxisAlignedBoundingBox temp_aabb;
-  if (!_geometries[0]->bounding_box(t0, t1, temp_aabb)) {
-    return false;
-  }
-
-  aabb = temp_aabb;
-  bool all_valid = std::all_of(_geometries.begin(), _geometries.end(), [t0, t1, &temp_aabb, &aabb](const auto &geom) -> bool {
-    bool result = geom->bounding_box(t0, t1, temp_aabb);
-    if (result) aabb.extend(temp_aabb);
-    return result;
-  });
-
-  return all_valid;
-}
 
 } // raytracer
 

@@ -34,10 +34,12 @@ set (SOURCES
     src/Camera.cpp
     src/materials.cpp
     src/objects/BvhNode.cpp
+    src/objects/Group.cpp
     src/objects/Mesh.cpp
+    src/objects/MeshRectangle.cpp
+    src/objects/MeshSphere.cpp
     src/objects/ObjectInstance.cpp
     src/objects/Plane.cpp
-    src/objects/Rectangle.cpp
     src/objects/Sphere.cpp
     src/random_numbers.cpp
     src/Perlin.cpp

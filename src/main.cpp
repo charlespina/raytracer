@@ -18,7 +18,8 @@
 #include "raytracer/objects/IObject.h"
 #include "raytracer/objects/ObjectInstance.h"
 #include "raytracer/objects/Plane.h"
-#include "raytracer/objects/Rectangle.h"
+#include "raytracer/objects/MeshRectangle.h"
+#include "raytracer/objects/MeshSphere.h"
 #include "raytracer/objects/Scene.h"
 #include "raytracer/objects/Sphere.h"
 #include "raytracer/random_numbers.h"
@@ -26,6 +27,8 @@
 #include "raytracer/Perlin.h"
 #include "raytracer/Ray.h"
 #include "raytracer/Vec3.h"
+
+#define PI 3.14159f
 
 using namespace raytracer;
 
@@ -135,23 +138,23 @@ std::shared_ptr<Scene> create_single_sphere_scene() {
     earth_texture
   );
 
-  scene->_geometries.push_back(std::make_shared<Plane>(Vec3(0.0f, 0.0f, 0.0f),
+  scene->create_object<Plane>(Vec3(0.0f, 0.0f, 0.0f),
     Vec3(0.0f, 1.0f, 0.0f),
     light_mat
-  ));
+  );
 
   /*
-  scene->_geometries.push_back(std::make_shared<Rectangle>(Vec3(2.0f, 1.0f, -1.0f),
+  scene->add_object(std::make_shared<Rectangle>(Vec3(2.0f, 1.0f, -1.0f),
     Vec3(2.0f, 1.25f, 0.0f),
     noise_mat
   ));*/
 
   float sphere_radius = 1.5f;
-  scene->_geometries.push_back(std::make_shared<Sphere>(
+  scene->create_object<Sphere>(
     Vec3(0.0f, sphere_radius, -1.0f), 
     sphere_radius,
     earth_mat
-  ));
+  );
 
   return scene;
 }
@@ -165,10 +168,10 @@ std::shared_ptr<Scene> create_nine_sphere_scene() {
     std::make_shared<ConstantTexture>(Vec3(1, 1, 1))
   );
   auto ground_mat = std::make_shared<Lambertian>( checker); 
-  scene->_geometries.push_back(std::make_shared<Plane>(Vec3(0.0f, 0.0f, 0.0f),
+  scene->create_object<Plane>(Vec3(0.0f, 0.0f, 0.0f),
     Vec3(0.0f, 1.0f, 0.0f),
     ground_mat
-  ));
+  );
 
   // hero spheres
   int variations = 3;
@@ -179,20 +182,20 @@ std::shared_ptr<Scene> create_nine_sphere_scene() {
 
     auto mirror = create_mirror_material();
     mirror->_roughness = std::make_shared<ConstantTexture>(t);
-    scene->_geometries.push_back(std::make_shared<Sphere>(Vec3(0.0, y, 0.0f),
+    scene->add_object(std::make_shared<Sphere>(Vec3(0.0, y, 0.0f),
       sphere_radius,
       mirror
     ));
 
     auto lambert = create_lambert_material();
-    scene->_geometries.push_back(std::make_shared<Sphere>(Vec3(1.0, y, 0.0f),
+    scene->add_object(std::make_shared<Sphere>(Vec3(1.0, y, 0.0f),
       sphere_radius,
       lambert
     ));
 
     auto lens = create_lens_material();
     lens->_roughness = std::make_shared<ConstantTexture>(float(i)/(variations-1));
-    scene->_geometries.push_back(std::make_shared<Sphere>(
+    scene->add_object(std::make_shared<Sphere>(
       Vec3(-1.0f, y, 0.0f), 
       sphere_radius,
       lens
@@ -230,12 +233,13 @@ std::shared_ptr<Scene> create_nine_sphere_scene() {
         transform
       );
 
-      scene->_geometries.push_back(instance);
+      scene->add_object(instance);
     }
   }
 
   return scene;
 }
+
 
 std::shared_ptr<Scene> create_cornell_box() {
   float room_size = 10.0f;
@@ -269,21 +273,28 @@ std::shared_ptr<Scene> create_cornell_box() {
     float light_distance = room_half;
     float light_height = room_size - 0.1f;
 
-    auto light_mat = std::make_shared<DiffuseLight>(std::make_shared<ConstantTexture>(100.0f));
+    auto light_mat = std::make_shared<Lambertian>(std::make_shared<ConstantTexture>(100.0f));
+
+    Eigen::Affine3f embiggen_tx = 
+      // Eigen::AngleAxisf(3.1415f, Eigen::Vector3f::UnitX()) * 
+      Eigen::Scaling(light_size) *
+      Eigen::Affine3f::Identity();
 
     Eigen::Affine3f light_tx = 
       Eigen::Translation3f(0, 15.0f, -light_distance) *
       // Eigen::AngleAxisf(3.1415f, Eigen::Vector3f::UnitX()) * 
       Eigen::Scaling(light_size) *
       Eigen::Affine3f::Identity();
+
+    auto rect_mesh2 = std::make_shared<MeshRectangle>(
+      10, 10,
+      lambert_red
+    );
     
-    scene->_geometries.push_back(std::make_shared<ObjectInstance>(std::make_shared<Rectangle>(
-      Vec3(-0.5f, 0, 0.5f),
-      Vec3(-0.5f, 0, -0.5f),
-      Vec3(0.5f, 0, -0.5f),
-      Vec3(0.5f, 0, 0.5f),
-      light_mat
-    ), light_tx));
+    std::shared_ptr<Group> group = std::make_shared<Group>();
+    group->add_object(std::make_shared<ObjectInstance>(rect_mesh2, light_tx, lambert_red));
+    group->add_object(std::make_shared<ObjectInstance>(rect_mesh2, embiggen_tx, lambert_red));
+    scene->add_object(group);
 
     size_t num_instances = 1;
     std::array<Vec3, 5> colors = {
@@ -315,9 +326,9 @@ std::shared_ptr<Scene> create_cornell_box() {
           Eigen::Affine3f::Identity();
 
         if (use_instances) {
-          scene->_geometries.push_back(std::make_shared<ObjectInstance>(sphere, spiral_tx));
+          scene->add_object(std::make_shared<ObjectInstance>(sphere, spiral_tx));
         } else {
-          scene->_geometries.push_back(std::make_shared<Sphere>(
+          scene->add_object(std::make_shared<Sphere>(
             spiral_tx * Vec3(0, 0, 0),
             sphere_size,
             mat
@@ -336,9 +347,9 @@ std::shared_ptr<Scene> create_cornell_box() {
           Eigen::Affine3f::Identity();
 
         if (use_instances) {
-          scene->_geometries.push_back(std::make_shared<ObjectInstance>(sphere, column_tx));
+          scene->add_object(std::make_shared<ObjectInstance>(sphere, column_tx));
         } else {
-          scene->_geometries.push_back(std::make_shared<Sphere>(
+          scene->add_object(std::make_shared<Sphere>(
             column_tx * Vec3(0, 0, 0),
             sphere_size,
             mat
@@ -350,30 +361,30 @@ std::shared_ptr<Scene> create_cornell_box() {
 
   /*
   // left wall
-  scene->_geometries.push_back(std::make_shared<Plane>(Vec3(-rect_half, 0.0f, 0.0f),
+  scene->add_object(std::make_shared<Plane>(Vec3(-rect_half, 0.0f, 0.0f),
     Vec3(1.0f, 0.0f, 0.0f),
     lambert_red
   ));
 
   // right wall
-  scene->_geometries.push_back(std::make_shared<Plane>(Vec3(rect_half, 0.0f, 0.0f),
+  scene->add_object(std::make_shared<Plane>(Vec3(rect_half, 0.0f, 0.0f),
     Vec3(-1.0f, 0.0f, 0.0f),
     lambert_green
   ));
 
   // back wall
-  scene->_geometries.push_back(std::make_shared<Plane>(Vec3(0.0f, 0.0f, -rect_size),
+  scene->add_object(std::make_shared<Plane>(Vec3(0.0f, 0.0f, -rect_size),
     Vec3(0.0f, 0.0f, 1.0f),
     lambert_gray
   ));
   // ceiling
-  scene->_geometries.push_back(std::make_shared<Plane>(Vec3(0.0f, rect_size, 0.0f),
+  scene->add_object(std::make_shared<Plane>(Vec3(0.0f, rect_size, 0.0f),
     Vec3(0.0f, -1.0f, 0.0f),
     lambert_gray
   ));
 
   // rear wall
-  scene->_geometries.push_back(std::make_shared<Plane>(Vec3(0.0f, 0.0f, rect_size + 0.5f),
+  scene->add_object(std::make_shared<Plane>(Vec3(0.0f, 0.0f, rect_size + 0.5f),
     Vec3(0.0f, 0.0f, 1.0f),
     lambert_gray
   ));
@@ -382,18 +393,24 @@ std::shared_ptr<Scene> create_cornell_box() {
 
   // plane ground
   /*
-  scene->_geometries.push_back(std::make_shared<Plane>(Vec3(0.0f, 0.0f, 0.0f),
+  scene->add_object(std::make_shared<Plane>(Vec3(0.0f, 0.0f, 0.0f),
     Vec3(0.0f, 1.0f, 0.0f),
     lambert_gray
   ));
   */
 
   // sphere ground
-  scene->_geometries.push_back(std::make_shared<Sphere>(
+  scene->add_object(std::make_shared<Sphere>(
     Vec3(0, -100, 0),
     100.0f,
     lambert_gray
   ));
+
+  auto sphere_mesh = std::make_shared<MeshSphere>(1.0f, 20, 20, lambert_red);
+  scene->add_object(sphere_mesh);
+
+  Eigen::Affine3f sphere_tx = Eigen::Translation3f(0, room_half, 0) * Eigen::Affine3f::Identity();
+  scene->create_object<ObjectInstance>(sphere_mesh, sphere_tx);
 
   // rect ground
   /*
@@ -405,13 +422,13 @@ std::shared_ptr<Scene> create_cornell_box() {
   };
 
   for (const auto &pt : pts) {
-    scene->_geometries.push_back(std::make_shared<Sphere>(pt, 0.1f, std::make_shared<Lambertian>(std::make_shared<ConstantTexture>(Vec3(0, 0, 0)))));
+    scene->add_object(std::make_shared<Sphere>(pt, 0.1f, std::make_shared<Lambertian>(std::make_shared<ConstantTexture>(Vec3(0, 0, 0)))));
   }
 
-  auto rect = std::make_shared<Rectangle>(
+  auto rect = std::make_shared<MeshRectangle>(
     pts[0], pts[1], pts[2], pts[3],
     lambert_gray);
-  scene->_geometries.push_back(rect);
+  scene->add_object(rect);
   */
 
   return scene;
@@ -428,7 +445,7 @@ int main(int argc, char **argv) {
 
   float t_begin = 0.0f;
   float t_end = 0.0f;
-  auto bvh = build_bvh(scene->_geometries, t_begin, t_end);
+  auto bvh = build_bvh(scene->_children, t_begin, t_end);
  
   {
     Timer render = Timer("render time");
