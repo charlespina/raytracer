@@ -20,6 +20,7 @@ bool Group::bounding_box(float t0, float t1, AxisAlignedBoundingBox& aabb) const
   if (_children.empty()) return false;
 
   AxisAlignedBoundingBox temp_aabb;
+  temp_aabb.setEmpty();
   if (!_children[0]->bounding_box(t0, t1, temp_aabb)) {
     return false;
   }

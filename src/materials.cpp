@@ -38,7 +38,7 @@ bool Lambertian::scatter(const Ray &iray, const HitRecord &hit, Vec3 &attenuatio
     attenuation = Vec3(1.0f, 1.0f, 1.0f); // _albedo;
   } else {
     // diffuse scatter - scatter in random direction
-    scattered = Ray(hit.p, hit.normal + random_in_unit_sphere(), iray.time());
+    scattered = Ray(hit.p, (hit.normal + random_in_unit_sphere()).normalized(), iray.time());
     attenuation = _albedo->sample_color(u, v, hit.p);
   }
   return true;
@@ -108,14 +108,14 @@ bool Metal::scatter(const Ray &iray, const HitRecord &hit, Vec3 &attenuation, Ra
   return ((dot(scattered.direction(), hit.normal)) > 0);
 }
 
-
 bool DiffuseLight::scatter(const Ray &iray, const HitRecord &hit, Vec3 &attenuation, Ray &scattered) const {
   return false;
 }
 
 Vec3 DiffuseLight::emit(const Ray &iray, const HitRecord &hit) const {
-  float t = hit.t; // (hit.p - iray.origin()).norm();
-  float falloff = 1.0f / (t * t + 1.0f); 
+  float t = hit.t;
+  // float t = (hit.p - iray.origin()).norm();
+  float falloff = 1.0f; // / (t * t); 
   return falloff * _emissive->sample_color(hit.texcoord.u(), hit.texcoord.v(), hit.p);
 }
 

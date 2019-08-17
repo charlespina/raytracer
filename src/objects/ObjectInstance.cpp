@@ -56,6 +56,8 @@ bool ObjectInstance::bounding_box(float t0, float t1, AxisAlignedBoundingBox &aa
   if (!has_bbox) return false;
 
   AxisAlignedBoundingBox result;
+  result.setEmpty();
+
   for (auto corner : corners) {
     result.extend(_matrices->_transform * untransformed_bbox.corner(corner));
   }

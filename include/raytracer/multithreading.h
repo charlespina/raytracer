@@ -2,6 +2,7 @@
 #define RT_MULTITHREADING_H
 
 #include "tbb/parallel_for.h"
+#include <functional>
 
 #define RT_MULTITHREADING_ENABLED 1
 

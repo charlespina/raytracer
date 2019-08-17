@@ -75,6 +75,8 @@ bool Mesh::hit(const Ray& r, float t_min, float t_max, HitRecord &record) const 
 
 bool Mesh::bounding_box(float t0, float t1, AxisAlignedBoundingBox& aabb) const {
   AxisAlignedBoundingBox box;
+  box.setEmpty();
+
   for (const auto &v : _vertices) {
     box.extend(v);
   }

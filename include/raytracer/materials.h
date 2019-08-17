@@ -64,7 +64,7 @@ class Isotropic : public Material {
 public:
   Isotropic(std::shared_ptr<Texture> texture) : _albedo(texture) {}
   virtual bool scatter(const Ray &iray, const HitRecord &hit, Vec3 &attenuation, Ray &scattered) const override {
-    scattered = Ray(hit.p, random_in_unit_sphere().normalized());
+    scattered = Ray(hit.p, random_in_unit_sphere().normalized(), iray.time());
     attenuation = _albedo->sample_color(hit.texcoord.x(), hit.texcoord.y(), hit.p);
     return true; 
   }

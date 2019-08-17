@@ -15,11 +15,14 @@
 #include "raytracer/materials.h"
 #include "raytracer/multithreading.h"
 #include "raytracer/objects/BvhNode.h"
+#include "raytracer/objects/ConstantMedium.h"
 #include "raytracer/objects/IObject.h"
 #include "raytracer/objects/ObjectInstance.h"
 #include "raytracer/objects/Plane.h"
+#include "raytracer/objects/MeshCube.h"
 #include "raytracer/objects/MeshRectangle.h"
 #include "raytracer/objects/MeshSphere.h"
+#include "raytracer/objects/RectXZ.h"
 #include "raytracer/objects/Scene.h"
 #include "raytracer/objects/Sphere.h"
 #include "raytracer/random_numbers.h"
@@ -58,17 +61,19 @@ x eigen!
   x perlin noise
   x image textures
   x instances / transformation
-  - volume material
+  x volume material
   - cornell box
-
 */
-
 
 struct Config {
   size_t image_width = 300;
   size_t image_height = 300;
-  size_t max_bounces = 100;
-  size_t samples_per_pixel = 30;
+  size_t max_bounces = 10;
+  size_t samples_per_pixel = 100;
+  Vec3 background_color = Vec3(0.f, 0.f, 0.f);
+  // Vec3 background_color = Vec3(0.1f, 0.1f, 0.1f);
+  // sky
+  // Vec3 background_color = Vec3(0.5f, 0.7f, 1.0f);
 } config;
 
 Vec3 normal_to_color(const Vec3 &n) {
@@ -87,25 +92,18 @@ std::shared_ptr<Camera> create_default_camera(size_t _width, size_t _height) {
   ));
 }
 
-Vec3 raycast(const Ray &r, IObject &hitable, size_t depth) {
+Vec3 raycast(const Ray &r, IObject &world, size_t depth) {
   HitRecord record;
-  if (hitable.hit(r, 0.001f, std::numeric_limits<float>::max(), record)) {
+  if (world.hit(r, 0.001f, std::numeric_limits<float>::max(), record)) {
     Ray scattered;
-    Vec3 accumulated(0, 0, 0);
-  
     Vec3 attenuation;
-    if (depth < config.max_bounces && record.material->scatter(r, record, attenuation, scattered)) {
-      accumulated += (attenuation.array() * raycast(scattered, hitable, depth + 1).array()).matrix();
-    }
-
     Vec3 emitted = record.material->emit(r, record);
-    accumulated += emitted;
-
-    return accumulated;
+    if (depth < config.max_bounces && record.material->scatter(r, record, attenuation, scattered)) {
+      return emitted + (attenuation.array() * raycast(scattered, world, depth + 1).array()).matrix();
+    }
+    return emitted;
   } else {
-    Vec3 unit_direction = unit_vector(r.direction());
-    float t = 0.5f * (unit_direction.y() + 1.0f);
-    return (1.0f - t) * Vec3(1.0f, 1.0f, 1.0f) + t * Vec3(0.5f, 0.7f, 1.0f);
+    return config.background_color;
   }
 }
 
@@ -258,178 +256,116 @@ std::shared_ptr<Scene> create_cornell_box() {
     2.75f // focus dist
   ));
 
-
-  auto lambert_gray = std::make_shared<Lambertian>(Vec3(0.5f, 0.5f, 0.5f));
-  auto lambert_red = std::make_shared<Lambertian>(Vec3(1.0f, 0.0f, 0.0f));
-  auto lambert_green = std::make_shared<Lambertian>(Vec3(0.0f, 1.0f, 0.0f));
+  auto lambert_gray = std::make_shared<Lambertian>(Vec3(0.73f, 0.73f, 0.73f));
+  auto lambert_red = std::make_shared<Lambertian>(Vec3(0.65f, 0.05f, 0.05f));
+  auto lambert_green = std::make_shared<Lambertian>(Vec3(0.12f, 0.45f, 0.15f));
 
   float rect_size = room_size;
   float rect_half = rect_size/2.0f;
 
   // light
   {
-    float light_size = 5.0f;
+    float light_size = 2.5f;
     float light_half = light_size/2.0f;
-    float light_distance = room_half;
-    float light_height = room_size - 0.1f;
+    float light_distance = room_half/2.0f - light_size;
+    float light_height = room_size - 0.001f;
 
-    auto light_mat = std::make_shared<Lambertian>(std::make_shared<ConstantTexture>(100.0f));
-
-    Eigen::Affine3f embiggen_tx = 
-      // Eigen::AngleAxisf(3.1415f, Eigen::Vector3f::UnitX()) * 
-      Eigen::Scaling(light_size) *
-      Eigen::Affine3f::Identity();
+    auto light_mat = std::make_shared<DiffuseLight>(std::make_shared<ConstantTexture>(15.0f));
 
     Eigen::Affine3f light_tx = 
-      Eigen::Translation3f(0, 15.0f, -light_distance) *
+      Eigen::Translation3f(0, light_height, -light_distance) *
       // Eigen::AngleAxisf(3.1415f, Eigen::Vector3f::UnitX()) * 
       Eigen::Scaling(light_size) *
       Eigen::Affine3f::Identity();
 
-    auto rect_mesh2 = std::make_shared<MeshRectangle>(
+    auto rect_mesh = std::make_shared<MeshRectangle>(
       10, 10,
-      lambert_red
+      light_mat
     );
     
     std::shared_ptr<Group> group = std::make_shared<Group>();
-    group->add_object(std::make_shared<ObjectInstance>(rect_mesh2, light_tx, lambert_red));
-    group->add_object(std::make_shared<ObjectInstance>(rect_mesh2, embiggen_tx, lambert_red));
+    group->add_object(std::make_shared<ObjectInstance>(rect_mesh, light_tx, light_mat));
     scene->add_object(group);
-
-    size_t num_instances = 1;
-    std::array<Vec3, 5> colors = {
-      Vec3(1, 0, 0),
-      Vec3(1, 1, 0).normalized(),
-      Vec3(0, 1, 0),
-      Vec3(0, 0, 1),
-      Vec3(0, 1, 1).normalized(),
-    };
-
-    bool use_instances = true;
-    for (size_t i=0; i<num_instances; i++) {
-      float t = i/(float)(num_instances-1);
-      auto light_mat = std::make_shared<DiffuseLight>(std::make_shared<ConstantTexture>(100.0f));
-      auto mat = std::make_shared<Lambertian>(std::make_shared<ConstantTexture>(colors[i % colors.size()]));
-      float sphere_size = 1.2f;
-      auto sphere = std::make_shared<Sphere>(Vec3(0, 0, 0), 1.0f, mat);
-
-      // spiral
-      {
-        float d = lerp(0.0f, room_size/2.0f - sphere_size/2.0f, t);
-        float turns = 2.0f;
-        Vec3 point_of_interest = Vec3(0, room_size/2.0f, -light_distance);
-        Eigen::Affine3f spiral_tx = 
-          Eigen::Translation3f(point_of_interest) * 
-          Eigen::AngleAxisf(turns * 3.1415f * t, Eigen::Vector3f::UnitZ()) * 
-          Eigen::Translation3f(d, 0, 0) *
-          Eigen::Scaling(sphere_size) *
-          Eigen::Affine3f::Identity();
-
-        if (use_instances) {
-          scene->add_object(std::make_shared<ObjectInstance>(sphere, spiral_tx));
-        } else {
-          scene->add_object(std::make_shared<Sphere>(
-            spiral_tx * Vec3(0, 0, 0),
-            sphere_size,
-            mat
-          ));
-        }
-      }
-
-      // column
-      {
-        Vec3 offset = lerp(Vec3(0, 0, 0), Vec3(0, 10, 0), t);
-        Vec3 point_of_interest = Vec3(0, 0.0f, -light_distance/4.0f);
-        Eigen::Affine3f column_tx =
-          Eigen::Translation3f(offset) *
-          Eigen::Translation3f(point_of_interest) *
-          Eigen::Scaling(sphere_size) *
-          Eigen::Affine3f::Identity();
-
-        if (use_instances) {
-          scene->add_object(std::make_shared<ObjectInstance>(sphere, column_tx));
-        } else {
-          scene->add_object(std::make_shared<Sphere>(
-            column_tx * Vec3(0, 0, 0),
-            sphere_size,
-            mat
-          ));
-        }
-      }
-    }
   }
 
   /*
-  // left wall
-  scene->add_object(std::make_shared<Plane>(Vec3(-rect_half, 0.0f, 0.0f),
-    Vec3(1.0f, 0.0f, 0.0f),
-    lambert_red
-  ));
-
-  // right wall
-  scene->add_object(std::make_shared<Plane>(Vec3(rect_half, 0.0f, 0.0f),
-    Vec3(-1.0f, 0.0f, 0.0f),
-    lambert_green
-  ));
-
-  // back wall
-  scene->add_object(std::make_shared<Plane>(Vec3(0.0f, 0.0f, -rect_size),
-    Vec3(0.0f, 0.0f, 1.0f),
-    lambert_gray
-  ));
-  // ceiling
-  scene->add_object(std::make_shared<Plane>(Vec3(0.0f, rect_size, 0.0f),
-    Vec3(0.0f, -1.0f, 0.0f),
-    lambert_gray
-  ));
-
-  // rear wall
-  scene->add_object(std::make_shared<Plane>(Vec3(0.0f, 0.0f, rect_size + 0.5f),
-    Vec3(0.0f, 0.0f, 1.0f),
-    lambert_gray
-  ));
-
+  auto foggy_sphere = std::make_shared<ConstantMedium>(sphere_mesh, 
+    0.8f, 
+    std::make_shared<ConstantTexture>(Vec3(1.0f, 1.0f, 1.0f)));
+  scene->add_object(foggy_sphere);
   */
 
-  // plane ground
-  /*
-  scene->add_object(std::make_shared<Plane>(Vec3(0.0f, 0.0f, 0.0f),
-    Vec3(0.0f, 1.0f, 0.0f),
-    lambert_gray
-  ));
-  */
-
-  // sphere ground
-  scene->add_object(std::make_shared<Sphere>(
-    Vec3(0, -100, 0),
-    100.0f,
-    lambert_gray
-  ));
-
-  auto sphere_mesh = std::make_shared<MeshSphere>(1.0f, 20, 20, lambert_red);
-  scene->add_object(sphere_mesh);
-
-  Eigen::Affine3f sphere_tx = Eigen::Translation3f(0, room_half, 0) * Eigen::Affine3f::Identity();
-  scene->create_object<ObjectInstance>(sphere_mesh, sphere_tx);
-
-  // rect ground
-  /*
-  std::array<Vec3, 4> pts = {
-    Vec3(-10.0f, 0, 10.0f),
-    Vec3(-10.0f, 0, -10.0f),
-    Vec3(10.0f, 0, -10.0f),
-    Vec3(10.0f, 0, 10.0f)
-  };
-
-  for (const auto &pt : pts) {
-    scene->add_object(std::make_shared<Sphere>(pt, 0.1f, std::make_shared<Lambertian>(std::make_shared<ConstantTexture>(Vec3(0, 0, 0)))));
+  // red sphere
+  {
+    auto sphere_mesh = std::make_shared<Sphere>(Vec3(0, 0, 0), 1.0f, lambert_red);
+    Eigen::Affine3f sphere_tx = Eigen::Translation3f(room_half/4.0f, 1.0f, -2.4f) * Eigen::Affine3f::Identity();
+    scene->create_object<ObjectInstance>(sphere_mesh, sphere_tx);
   }
 
-  auto rect = std::make_shared<MeshRectangle>(
-    pts[0], pts[1], pts[2], pts[3],
-    lambert_gray);
-  scene->add_object(rect);
-  */
+  // metal sphere
+  {
+    float sphere_size = 2.0f;
+    auto sphere_mesh = std::make_shared<Sphere>(Vec3(0, 0, 0), sphere_size, create_mirror_material());
+    Eigen::Affine3f sphere_tx = Eigen::Translation3f(-room_half/2.0f, sphere_size, -2.0f) * Eigen::Affine3f::Identity();
+    scene->create_object<ObjectInstance>(sphere_mesh, sphere_tx);
+  }
+
+  // glass sphere
+  {
+    float sphere_size = 1.0f;
+    auto glass_mat = create_lens_material();
+    glass_mat->_ior = 1.5f;
+
+    auto sphere_mesh = std::make_shared<Sphere>(Vec3(0, 0, 0), sphere_size, glass_mat);
+    Eigen::Affine3f sphere_tx = Eigen::Translation3f(room_half/2.0f, sphere_size, 0) * Eigen::Affine3f::Identity();
+    scene->create_object<ObjectInstance>(sphere_mesh, sphere_tx);
+  }
+
+  // cube
+  { 
+    /*
+    auto cube = std::make_shared<MeshCube>(lambert_red);
+    Eigen::Affine3f cube_tx =
+      Eigen::Translation3f(Vec3(room_half/2, 0, 0)) *
+      Eigen::AngleAxisf(0.15f * 2.0f * PI, Vec3::UnitY()) *
+      Eigen::Scaling(2.0f) *
+      Eigen::Affine3f::Identity();
+    scene->create_object<ObjectInstance>(cube,  cube_tx);
+    */
+  }
+
+
+  {
+    auto wall = std::make_shared<MeshRectangle>(
+      10, 10,
+      lambert_gray
+    );
+    auto alt_wall = std::make_shared<RectXZ>(10.0f, 10.0f, lambert_gray);
+
+    Eigen::Affine3f tx_scale = Eigen::Scaling(room_size) * Eigen::Affine3f::Identity();
+
+    // ground
+    // scene->add_object(alt_wall);
+    scene->create_object<ObjectInstance>(wall, tx_scale);
+
+    // side wall
+    scene->create_object<ObjectInstance>(wall,
+      Eigen::Translation3f(Vec3(-room_half, room_half, 0)) * Eigen::AngleAxisf(PI / 2, Vec3::UnitZ()) * tx_scale,
+      lambert_red);
+
+    // side wall
+    scene->create_object<ObjectInstance>(wall,
+      Eigen::Translation3f(Vec3(room_half, room_half, 0)) * Eigen::AngleAxisf(-PI / 2, Vec3::UnitZ()) * tx_scale,
+      lambert_green);
+
+    // ceiling
+    scene->create_object<ObjectInstance>(wall,
+      Eigen::Translation3f(Vec3(0, room_size, 0)) * Eigen::AngleAxisf(PI, Vec3::UnitZ()) * tx_scale);
+
+    // rear wall
+    scene->create_object<ObjectInstance>(wall,
+      Eigen::Translation3f(Vec3(0, room_half, -room_half)) * Eigen::AngleAxisf(PI/2, Vec3::UnitX()) * tx_scale);
+  }
 
   return scene;
 }

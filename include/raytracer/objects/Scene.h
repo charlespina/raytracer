@@ -5,6 +5,7 @@
 #include "raytracer/HitRecord.h"
 #include "raytracer/objects/IObject.h"
 #include "raytracer/objects/Group.h"
+#include "raytracer/textures.h"
 #include <vector>
 
 namespace raytracer {

@@ -33,6 +33,7 @@ set (SOURCES
     src/AxisAlignedBoundingBox.cpp
     src/Camera.cpp
     src/materials.cpp
+    src/objects/RectXZ.cpp
     src/objects/BvhNode.cpp
     src/objects/ConstantMedium.cpp
     src/objects/Group.cpp

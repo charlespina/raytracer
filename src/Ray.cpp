@@ -8,7 +8,7 @@ Ray::Ray() {
   _ray_count++;
 }
 
-Ray::Ray(const Vec3 &origin, const Vec3 &dir, float t) : _origin(origin), _dir(dir), _time(t) {
+Ray::Ray(const Vec3 &origin, const Vec3 &dir, float t) : _origin(origin), _dir(dir.normalized()), _time(t) {
   _ray_count++;
 }
 

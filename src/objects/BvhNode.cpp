@@ -8,12 +8,15 @@ namespace raytracer {
 using comparison_fn_t = std::function<bool(const std::shared_ptr<IObject> &, const std::shared_ptr<IObject> &)>;
 
 comparison_fn_t box_compare(int axis) {
+  std::cout << "axis: " << axis << std::endl;
   auto fn = [axis](const std::shared_ptr<IObject> &a, const std::shared_ptr<IObject> &b) -> bool {
     AxisAlignedBoundingBox left, right;
+    left.setEmpty();
+    right.setEmpty();
     if (!a->bounding_box(0, 0, left) || !b->bounding_box(0, 0, right))
       std::cerr << "no bounding box in BvhNode constructor!";
     
-    return (left.min()[axis] - right.min()[axis] < 0.0f);
+    return (left.min()[axis] - right.min()[axis]) < 0.0f;
   };
 
   return fn;
@@ -21,15 +24,16 @@ comparison_fn_t box_compare(int axis) {
 
 BvhNode::BvhNode(BvhNode::iterator_t list_begin, BvhNode::iterator_t list_end, float t0, float t1) 
 {
-  int axis = int(3 * random_number());
+  static int axis_counter = 1;
+  int axis = axis_counter++ % 3;
   comparison_fn_t comparator = box_compare(axis);
   std::sort(list_begin, list_end, comparator);
 
-  size_t n = std::distance(list_begin, list_end);
+  size_t n = list_end - list_begin; // std::distance(list_begin, list_end);
 
-  if (n == 1)
+  if (n == 1) {
     _left = _right = *list_begin;
-  else if (n == 2) {
+  } else if (n == 2) {
     _left = *list_begin;
     _right = *(list_begin + 1);
   } else {
@@ -39,6 +43,8 @@ BvhNode::BvhNode(BvhNode::iterator_t list_begin, BvhNode::iterator_t list_end, f
   }
 
   AxisAlignedBoundingBox box_left, box_right;
+  box_left.setEmpty();
+  box_right.setEmpty();
   if (!_left->bounding_box(t0, t1, box_left) || !_right->bounding_box(t0, t1, box_right))
     std::cerr << "no bounding box in BvhNode constructor!";
   _aabb = box_left.merged(box_right);

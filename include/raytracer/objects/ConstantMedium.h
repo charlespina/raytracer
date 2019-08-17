@@ -1,7 +1,10 @@
 #ifndef RT_CONSTANTMEDIUM_H_
 #define RT_CONSTANTMEDIUM_H_
 
+#include "raytracer/textures.h"
 #include "raytracer/objects/IObject.h"
+
+namespace raytracer {
 
 class ConstantMedium : public IObject {
 public:
@@ -17,6 +20,6 @@ public:
   float _density;
 };
 
+} // namespace
 
-
-#endif
+#endif // header guard
