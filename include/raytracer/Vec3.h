@@ -187,7 +187,7 @@ inline float dot(const Vec3 &a, const Vec3 &b) {
 }
 
 inline Vec3 unit_vector(const Vec3 &v) {
-  return v/v.norm();
+  return v.normalized();
 }
 
 inline Vec3 reflect(const Vec3 &v, const Vec3 &n) {

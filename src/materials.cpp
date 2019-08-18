@@ -32,13 +32,17 @@ bool Lambertian::scatter(const Ray &iray, const HitRecord &hit, Vec3 &attenuatio
   float u = hit.texcoord.u();
   float v = hit.texcoord.v();
 
+  /*
   if (random_number() < P_reflect) {
     Vec3 reflected = reflect(iray.direction(), hit.normal);
     scattered = Ray(hit.p, reflected, iray.time());
     attenuation = Vec3(1.0f, 1.0f, 1.0f); // _albedo;
-  } else {
+  } 
+  else
+  */
+  {
     // diffuse scatter - scatter in random direction
-    scattered = Ray(hit.p, (hit.normal + random_in_unit_sphere()).normalized(), iray.time());
+    scattered = Ray(hit.p, hit.normal + random_in_unit_sphere(), iray.time());
     attenuation = _albedo->sample_color(u, v, hit.p);
   }
   return true;

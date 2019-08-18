@@ -8,7 +8,6 @@ namespace raytracer {
 using comparison_fn_t = std::function<bool(const std::shared_ptr<IObject> &, const std::shared_ptr<IObject> &)>;
 
 comparison_fn_t box_compare(int axis) {
-  std::cout << "axis: " << axis << std::endl;
   auto fn = [axis](const std::shared_ptr<IObject> &a, const std::shared_ptr<IObject> &b) -> bool {
     AxisAlignedBoundingBox left, right;
     left.setEmpty();
@@ -24,12 +23,11 @@ comparison_fn_t box_compare(int axis) {
 
 BvhNode::BvhNode(BvhNode::iterator_t list_begin, BvhNode::iterator_t list_end, float t0, float t1) 
 {
-  static int axis_counter = 1;
-  int axis = axis_counter++ % 3;
+  int axis = int(3 * random_number());
   comparison_fn_t comparator = box_compare(axis);
   std::sort(list_begin, list_end, comparator);
 
-  size_t n = list_end - list_begin; // std::distance(list_begin, list_end);
+  size_t n = std::distance(list_begin, list_end);
 
   if (n == 1) {
     _left = _right = *list_begin;
@@ -38,7 +36,7 @@ BvhNode::BvhNode(BvhNode::iterator_t list_begin, BvhNode::iterator_t list_end, f
     _right = *(list_begin + 1);
   } else {
     size_t half_it = (list_end - list_begin)/2;
-    _left  = std::make_shared<BvhNode>(list_begin, list_begin + half_it, t0, t1);
+    _left  = std::make_shared<BvhNode>(list_begin, list_begin + half_it + 1, t0, t1);
     _right = std::make_shared<BvhNode>(list_begin + half_it, list_end, t0, t1);
   }
 

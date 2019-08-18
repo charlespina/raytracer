@@ -26,6 +26,7 @@ Mesh::Mesh(const std::vector<Vec3> &vertex_triplets) {
 
 bool Mesh::hit(const Ray& r, float t_min, float t_max, HitRecord &record) const {
   float closest_t = std::numeric_limits<float>::max();
+  bool did_hit = false;
 
   for (size_t tri=0; tri<_faces.size(); tri++) {
     const Vec3 & N = _face_normals[tri];
@@ -67,10 +68,10 @@ bool Mesh::hit(const Ray& r, float t_min, float t_max, HitRecord &record) const 
     closest_t = record.t = t;
     record.normal = N;
     record.material = _material.get();
-    return true;
+    did_hit = true;
   }
 
-  return false;
+  return did_hit;
 }
 
 bool Mesh::bounding_box(float t0, float t1, AxisAlignedBoundingBox& aabb) const {

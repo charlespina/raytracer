@@ -31,7 +31,9 @@ bool ObjectInstance::hit(const Ray &r, float t_min, float t_max, HitRecord &reco
     record.p = _matrices->_transform * record.p;
     record.normal = _matrices->_normal_matrix * record.normal;
     // original t is along transformed ray - we can effectively get the t of actual ray by getting the distance between the hit and origin
-    record.t = (record.p - r.origin()).norm();
+    // p = o + d*t;
+    float t = (record.p - r.origin()).dot(r.direction());
+    record.t = t; // (record.p - r.origin()).norm();
     if (_material) record.material = _material.get(); 
   }
 

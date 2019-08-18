@@ -26,12 +26,12 @@ std::vector<Vec3> create_cube_vertices() {
   };
 
   auto make_faces = [&one_face, &vertices, h](float t, Vec3 axis) -> void {
-    Vec3 offset = Vec3(0, -h, 0);
+    Vec3 offset = Vec3(0, h, 0);
     Eigen::AngleAxisf rotation = 
       Eigen::AngleAxisf(t * 2.0f * 3.14159f, axis);
 
     Eigen::Affine3f tx = 
-      Eigen::Translation3f(-offset) *
+      // Eigen::Translation3f(-offset) *
       rotation *
       Eigen::Translation3f(offset) *
       Eigen::Affine3f::Identity();
@@ -46,8 +46,8 @@ std::vector<Vec3> create_cube_vertices() {
   make_faces(0.25, Vec3::UnitZ());
   make_faces(0.5,  Vec3::UnitZ());
   make_faces(0.75, Vec3::UnitZ());
-  make_faces(0.25, Vec3::UnitY());
-  make_faces(0.75, Vec3::UnitY());
+  make_faces(0.25, Vec3::UnitX());
+  make_faces(0.75, Vec3::UnitX());
 
   return vertices;
 }
