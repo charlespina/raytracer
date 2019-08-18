@@ -45,6 +45,19 @@ public:
   Vec3 _color;
 };
 
+class GradientTexture : public Texture {
+public:
+  GradientTexture(const Vec3 & a, const Vec3 &b) : _color_a(a), _color_b(b) {}
+  virtual ~GradientTexture() {}
+
+  Vec3 sample_color(float u, float v, const Vec3 &p) const override {
+    return (1.0f - v) * _color_a + v * _color_b;
+  }
+
+  Vec3 _color_a;
+  Vec3 _color_b;
+};
+
 class CheckerTexture : public Texture {
 public:
   CheckerTexture() {};

@@ -16,7 +16,9 @@
 #include "raytracer/multithreading.h"
 #include "raytracer/objects/BvhNode.h"
 #include "raytracer/objects/ConstantMedium.h"
+#include "raytracer/objects/Environment.h"
 #include "raytracer/objects/IObject.h"
+#include "raytracer/objects/InvertedObject.h"
 #include "raytracer/objects/ObjectInstance.h"
 #include "raytracer/objects/Plane.h"
 #include "raytracer/objects/MeshCube.h"
@@ -157,6 +159,11 @@ std::shared_ptr<Scene> create_single_sphere_scene() {
 
 std::shared_ptr<Scene> create_nine_sphere_scene() {
   auto scene = std::make_shared<Scene>();
+
+  scene->create_object<Environment>(std::make_shared<GradientTexture>(
+    Vec3(1, 1, 1),
+    0.5f * Vec3(0.5f, 0.7f, 1.0f)
+  ));
 
   // ground plane
   auto checker = std::make_shared<CheckerTexture>(
@@ -382,7 +389,7 @@ int main(int argc, char **argv) {
 
   Image<float> img(config.image_width, config.image_height);
   
-  auto scene = create_cornell_box();
+  auto scene = create_nine_sphere_scene();
   if (!scene->_camera) scene->_camera = create_default_camera(img._width, img._height);
 
   float t_begin = 0.0f;
@@ -400,7 +407,7 @@ int main(int argc, char **argv) {
           float v = float(y + random_number()) / float(img._height);
         
           Ray r = scene->_camera->get_ray(u, v, t_begin, t_end);
-          color += raycast(r, *bvh.get(), 0, scene._background_color);
+          color += raycast(r, *bvh.get(), 0, scene->_background_color);
         }
         
         color /= float(config.samples_per_pixel);
