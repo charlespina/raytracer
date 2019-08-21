@@ -1,8 +1,7 @@
 #include "raytracer/objects/MeshSphere.h"
+#include "raytracer/math.h"
 
 using namespace raytracer;
-
-#define PI 3.14159f
 
 namespace {
   std::vector<Vec3> create_sphere_mesh(float radius, size_t num_segments, size_t num_sections) {
@@ -11,8 +10,8 @@ namespace {
       float s = i % num_segments / (float)(num_segments - 1);
       float t = j % num_sections / (float)(num_sections - 1);
 
-      float theta = t * 2.0f * PI;
-      float phi = s * PI;
+      float theta = t * 2.0f * RT_PI;
+      float phi = s * RT_PI;
 
       Vec3 result;
       result.x() = cos(theta) * sin(phi);

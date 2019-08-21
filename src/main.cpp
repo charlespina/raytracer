@@ -42,6 +42,14 @@ T lerp(const T&a, const T&b, float t) {
   return (1.0f - t) * a + t * b;
 }
 
+Vec3 replace_nan(const Vec3 &a) {
+  if (a.x() != a.x()
+    || a.y() != a.y()
+    || a.z() != a.z())
+    return Vec3::Zero();
+  return a;
+}
+
 /* 
 TODO
 
@@ -58,13 +66,21 @@ x create bounds for plane
 - fractals
 x tbb parallelization
 x eigen!
-- finish week of raytracer
+x finish week of raytracer
   x textures
   x perlin noise
   x image textures
   x instances / transformation
   x volume material
-  - cornell box
+  x cornell box
+- finish raytracer rest of life
+  - convert to monte carlo
+  - convert materials
+    - lambert
+    - dielectric
+    - metal
+  - create light shape
+    - define pdfs for hitables
 */
 
 struct Config {
@@ -93,13 +109,28 @@ std::shared_ptr<Camera> create_default_camera(size_t _width, size_t _height) {
 Vec3 raycast(const Ray &r, IObject &world, size_t depth, const Vec3 &miss_color) {
   HitRecord record;
   if (world.hit(r, 0.001f, std::numeric_limits<float>::max(), record)) {
-    Ray scattered;
-    Vec3 attenuation;
+    ScatterRecord srec;
     Vec3 emitted = record.material->emit(r, record);
-    if (depth < config.max_bounces && record.material->scatter(r, record, attenuation, scattered)) {
+    if (depth < config.max_bounces && record.material->scatter(r, record, srec)) {
+      if (srec._is_specular) {
+        return (srec._attenuation.array() * raycast(srec._specular_ray, world, depth + 1, miss_color).array()).matrix();
+      }
+
+      // ObjectPDF plight(light_shape, record.p);
+      // MixturePDF pdf(&plight, srec.pdf.get());
+      PDF &pdf = *srec._pdf;
+      Ray scattered = Ray(record.p, pdf.generate(), r.time());
+      float pdf_val = pdf.value(scattered.direction());
+
       // debug:
       // return normal_to_color(record.normal);
-      return emitted + (attenuation.array() * raycast(scattered, world, depth + 1, miss_color).array()).matrix();
+      return emitted + 
+        // record.material->scatter_pdf(r, record, scattered) *
+        (
+          srec._attenuation.array() *
+          raycast(scattered, world, depth+1, miss_color).array()
+        ).matrix()
+        ;// / pdf_val;
     }
     return emitted;
   } else {
@@ -363,17 +394,17 @@ std::shared_ptr<Scene> create_cornell_box() {
 
     // side wall
     scene->create_object<ObjectInstance>(wall,
-      Eigen::Translation3f(Vec3(-room_half, room_half, 0)) * Eigen::AngleAxisf(PI / 2, Vec3::UnitZ()) * tx_scale,
+      Eigen::Translation3f(Vec3(-room_half, room_half, 0)) * Eigen::AngleAxisf(-PI / 2, Vec3::UnitZ()) * tx_scale,
       lambert_red);
 
     // side wall
     scene->create_object<ObjectInstance>(wall,
-      Eigen::Translation3f(Vec3(room_half, room_half, 0)) * Eigen::AngleAxisf(-PI / 2, Vec3::UnitZ()) * tx_scale,
+      Eigen::Translation3f(Vec3(room_half, room_half, 0)) * Eigen::AngleAxisf(PI / 2, Vec3::UnitZ()) * tx_scale,
       lambert_green);
 
     // ceiling
     scene->create_object<ObjectInstance>(wall,
-      Eigen::Translation3f(Vec3(0, room_size, 0)) * Eigen::AngleAxisf(PI, Vec3::UnitZ()) * tx_scale);
+      Eigen::Translation3f(Vec3(0, room_size, 0)) * Eigen::AngleAxisf(-PI, Vec3::UnitZ()) * tx_scale);
 
     // rear wall
     scene->create_object<ObjectInstance>(wall,
@@ -389,7 +420,7 @@ int main(int argc, char **argv) {
 
   Image<float> img(config.image_width, config.image_height);
   
-  auto scene = create_nine_sphere_scene();
+  auto scene = create_cornell_box();
   if (!scene->_camera) scene->_camera = create_default_camera(img._width, img._height);
 
   float t_begin = 0.0f;
@@ -407,7 +438,7 @@ int main(int argc, char **argv) {
           float v = float(y + random_number()) / float(img._height);
         
           Ray r = scene->_camera->get_ray(u, v, t_begin, t_end);
-          color += raycast(r, *bvh.get(), 0, scene->_background_color);
+          color += replace_nan(raycast(r, *bvh.get(), 0, scene->_background_color));
         }
         
         color /= float(config.samples_per_pixel);

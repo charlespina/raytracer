@@ -15,6 +15,9 @@ public:
     _children.push_back(object);
   }
 
+  float pdf_value(const Vec3 &o, const Vec3 &dir) const override;
+  Vec3 random(const Vec3 &o) const override;
+
 public:
   std::vector<std::shared_ptr<IObject>> _children;
 };

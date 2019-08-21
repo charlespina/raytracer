@@ -18,7 +18,7 @@ public:
   }
 
   virtual ~Scene() {}
-  
+
 public:
   std::shared_ptr<Camera> _camera;
   Vec3 _background_color = Vec3(0, 0, 0);

@@ -44,6 +44,7 @@ set (SOURCES
     src/objects/Plane.cpp
     src/objects/Sphere.cpp
     src/random_numbers.cpp
+    src/pdfs.cpp
     src/Perlin.cpp
     src/Ray.cpp
     src/textures.cpp

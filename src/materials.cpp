@@ -1,4 +1,5 @@
 #include "raytracer/materials.h"
+#include "raytracer/OrthoNormalBasis.h"
 
 namespace raytracer {
 
@@ -24,35 +25,30 @@ namespace {
 } // internal namespace
 
 
-bool Lambertian::scatter(const Ray &iray, const HitRecord &hit, Vec3 &attenuation, Ray &scattered) const {
-  float ndv = dot(iray.direction(), hit.normal);
-  float f0 = 0.08f;
-  
-  float P_reflect = schlick(abs(ndv), 1.0f + f0);
+bool Lambertian::scatter(const Ray &iray, const HitRecord &hit, ScatterRecord &srec) const {
   float u = hit.texcoord.u();
   float v = hit.texcoord.v();
-
-  /*
-  if (random_number() < P_reflect) {
-    Vec3 reflected = reflect(iray.direction(), hit.normal);
-    scattered = Ray(hit.p, reflected, iray.time());
-    attenuation = Vec3(1.0f, 1.0f, 1.0f); // _albedo;
-  } 
-  else
-  */
-  {
-    // diffuse scatter - scatter in random direction
-    scattered = Ray(hit.p, hit.normal + random_in_unit_sphere(), iray.time());
-    attenuation = _albedo->sample_color(u, v, hit.p);
-  }
+  srec._is_specular = false;
+  srec._attenuation = _albedo->sample_color(u, v, hit.p);
+  srec._pdf = std::make_shared<CosinePDF>(hit.normal);
   return true;
 }
 
-bool Dielectric::scatter(const Ray &iray, const HitRecord &hit, Vec3 &attenuation, Ray &scattered) const {
+float Lambertian::scatter_pdf(const Ray &iray, const HitRecord &hit, const Ray &scattered) const {
+  float cosine = dot(hit.normal, scattered.direction());
+
+  if (cosine < 0) return 0;
+  return cosine / RT_PI;
+}
+
+bool Dielectric::scatter(const Ray &iray, const HitRecord &hit, ScatterRecord &srec) const {
+  srec._is_specular = true;
+  srec._pdf = nullptr;
+  srec._attenuation = Vec3(1, 1, 1);
+
   Vec3 outward_normal;
   Vec3 reflected = reflect(iray.direction(), hit.normal);
   float ni_over_nt;
-  attenuation = Vec3(1.0, 1.0, 1.0);
   Vec3 refracted;
   float P_reflect;
   float cosine;
@@ -74,9 +70,9 @@ bool Dielectric::scatter(const Ray &iray, const HitRecord &hit, Vec3 &attenuatio
 
   float u = 0, v = 0;
   if (random_number() < P_reflect) {
-    scattered = Ray(hit.p, reflected + roughness_lobe(_roughness->sample_scalar(u, v, hit.p)), iray.time());
+    srec._specular_ray = Ray(hit.p, reflected + roughness_lobe(_roughness->sample_scalar(u, v, hit.p)), iray.time());
   } else {
-    scattered = Ray(hit.p, refracted + roughness_lobe(_roughness->sample_scalar(u, v, hit.p)), iray.time()); 
+    srec._specular_ray = Ray(hit.p, refracted + roughness_lobe(_roughness->sample_scalar(u, v, hit.p)), iray.time()); 
   }
 
   return true;
@@ -104,15 +100,16 @@ Metal::Metal(std::shared_ptr<Texture> color, std::shared_ptr<Texture> roughness)
 , _roughness(roughness)
 {}
 
-bool Metal::scatter(const Ray &iray, const HitRecord &hit, Vec3 &attenuation, Ray &scattered) const {
+bool Metal::scatter(const Ray &iray, const HitRecord &hit, ScatterRecord &srec) const {
   Vec3 reflected = reflect(unit_vector(iray.direction()), hit.normal);
   float u = 0, v = 0;
-  scattered = Ray(hit.p, reflected + roughness_lobe(_roughness->sample_scalar(u, v, hit.p)), iray.time());
-  attenuation = _color->sample_color(u, v, hit.p);
-  return ((dot(scattered.direction(), hit.normal)) > 0);
+  srec._specular_ray = Ray(hit.p, reflected + roughness_lobe(_roughness->sample_scalar(u, v, hit.p)), iray.time());
+  srec._attenuation = _color->sample_color(u, v, hit.p);
+  srec._is_specular = true;
+  return true;
 }
 
-bool DiffuseLight::scatter(const Ray &iray, const HitRecord &hit, Vec3 &attenuation, Ray &scattered) const {
+bool DiffuseLight::scatter(const Ray &iray, const HitRecord &hit, ScatterRecord &srec) const {
   return false;
 }
 

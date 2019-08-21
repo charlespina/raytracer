@@ -1,6 +1,5 @@
 #include "raytracer/objects/Sphere.h"
-
-#define PI 3.14159f
+#include "raytracer/math.h"
 
 namespace raytracer {
 
@@ -9,8 +8,8 @@ namespace {
     float phi = atan2(p.z(), p.x());
     float theta = asin(p.y());
 
-    float u = 1.0f - (phi + PI) / (2 * PI);
-    float v = (theta + PI/2.0f) / PI;
+    float u = 1.0f - (phi + RT_PI) / (2 * RT_PI);
+    float v = (theta + RT_PI/2.0f) / RT_PI;
   
     TexCoord texcoord(
       u, v

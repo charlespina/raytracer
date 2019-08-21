@@ -1,4 +1,5 @@
 #include "raytracer/objects/Group.h"
+#include "raytracer/random_numbers.h"
 
 using namespace raytracer;
 
@@ -33,4 +34,18 @@ bool Group::bounding_box(float t0, float t1, AxisAlignedBoundingBox& aabb) const
   });
 
   return all_valid;
+}
+
+float Group::pdf_value(const Vec3 &o, const Vec3 &dir) const {
+  float weight = 1.0f/_children.size();
+  float sum = 0.0f;
+  for (const auto &child : _children) {
+    sum += weight * child->pdf_value(o, dir);
+  }
+  return sum;
+}
+
+Vec3 Group::random(const Vec3 &o) const {
+  size_t idx = size_t(random_number() * _children.size());
+  return _children[idx]->random(o);
 }

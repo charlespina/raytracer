@@ -37,11 +37,14 @@ MeshRectangle::MeshRectangle(size_t num_segments, size_t num_sections, std::shar
 : Mesh(create_rectangle_mesh(num_segments, num_sections))
 {
   _material = mat;
+  _aabb = AxisAlignedBoundingBox(Vec3(-0.5f, 0, -0.5f), Vec3(0.5f, 0, 0.5f));
 }
 
+/*
 MeshRectangle::MeshRectangle(Vec3 pt0, Vec3 pt1, Vec3 pt2, Vec3 pt3, 
   std::shared_ptr<Material> mat) 
 : Mesh({pt0, pt1, pt2, pt0, pt2, pt3})
 {
   _material = mat;
 }
+*/
