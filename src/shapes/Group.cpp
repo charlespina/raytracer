@@ -1,4 +1,4 @@
-#include "raytracer/objects/Group.h"
+#include "raytracer/shapes/Group.h"
 #include "raytracer/random_numbers.h"
 
 using namespace raytracer;

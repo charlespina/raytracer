@@ -5,13 +5,13 @@
 
 #include "raytracer/HitRecord.h"
 #include "raytracer/materials.h"
-#include "raytracer/objects/IObject.h"
+#include "raytracer/shapes/Shape.h"
 #include "raytracer/Ray.h"
 #include "raytracer/Vec3.h"
 
 namespace raytracer {
 
-class Sphere : public IObject {
+class Sphere : public Shape {
 public:
   Sphere() = delete;
   Sphere(const Vec3 &center, float r, std::shared_ptr<Material> mat, Vec3 velocity=Vec3(0,0,0));

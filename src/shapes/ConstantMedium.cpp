@@ -1,9 +1,9 @@
-#include "raytracer/objects/ConstantMedium.h"
+#include "raytracer/shapes/ConstantMedium.h"
 #include "raytracer/materials.h"
 
 using namespace raytracer;
 
-ConstantMedium::ConstantMedium(std::shared_ptr<IObject> object, float density, std::shared_ptr<Texture> albedo)
+ConstantMedium::ConstantMedium(std::shared_ptr<Shape> object, float density, std::shared_ptr<Texture> albedo)
 : _object(object)
 , _density(density)
 {

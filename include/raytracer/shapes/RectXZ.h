@@ -1,8 +1,8 @@
-#include "raytracer/objects/IObject.h"
+#include "raytracer/shapes/Shape.h"
 
 namespace raytracer {
 
-class RectXZ : public IObject {
+class RectXZ : public Shape {
 public:
   RectXZ(float width, float height, std::shared_ptr<Material> mat);
   virtual bool hit(const Ray& r, float t_min, float t_max, HitRecord &record) const override;

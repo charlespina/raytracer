@@ -1,4 +1,4 @@
-#include "raytracer/objects/Mesh.h"
+#include "raytracer/shapes/Mesh.h"
 #include <cassert>
 
 namespace raytracer {

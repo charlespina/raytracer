@@ -1,13 +1,13 @@
 #ifndef RT_INVERTEDOBJECT_H_
 #define RT_INVERTEDOBJECT_H_
 
-#include "raytracer/objects/IObject.h"
+#include "raytracer/shapes/Shape.h"
 
 namespace raytracer {
 
-class InvertedObject : public IObject {
+class InvertedObject : public Shape {
 public:
-  InvertedObject(std::shared_ptr<IObject> object) : _object(object) {}
+  InvertedObject(std::shared_ptr<Shape> object) : _object(object) {}
 
   bool hit(const Ray& r, float t_min, float t_max, HitRecord &record) const override {
     bool result = _object->hit(r, t_min, t_max, record);
@@ -22,7 +22,7 @@ public:
   }
 
 public:
-  std::shared_ptr<IObject> _object;
+  std::shared_ptr<Shape> _object;
 };
 
 } // namespace

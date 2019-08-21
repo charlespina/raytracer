@@ -1,4 +1,4 @@
-#include "raytracer/objects/RectXZ.h"
+#include "raytracer/shapes/RectXZ.h"
 
 using namespace raytracer;
 

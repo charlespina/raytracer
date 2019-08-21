@@ -2,7 +2,7 @@
 #define RT_PDFS_H_
 
 #include "raytracer/math.h"
-#include "raytracer/objects/IObject.h"
+#include "raytracer/shapes/Shape.h"
 #include "raytracer/OrthoNormalBasis.h"
 #include "raytracer/random_numbers.h"
 #include "raytracer/Vec3.h"
@@ -27,7 +27,7 @@ public:
 
 class ObjectPDF : public PDF {
 public:
-  ObjectPDF(std::shared_ptr<IObject> obj, const Vec3 &origin) : _origin(origin), _object(obj) {}
+  ObjectPDF(std::shared_ptr<Shape> obj, const Vec3 &origin) : _origin(origin), _object(obj) {}
 
   float value(const Vec3 &dir) const override {
     return _object->pdf_value(_origin, dir);
@@ -39,7 +39,7 @@ public:
 
 public:
   Vec3 _origin;
-  std::shared_ptr<IObject> _object;
+  std::shared_ptr<Shape> _object;
 
 };
 

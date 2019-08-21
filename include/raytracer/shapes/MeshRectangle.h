@@ -3,8 +3,8 @@
 
 #include "raytracer/AxisAlignedBoundingBox.h"
 #include "raytracer/materials.h"
-#include "raytracer/objects/IObject.h"
-#include "raytracer/objects/Mesh.h"
+#include "raytracer/shapes/Shape.h"
+#include "raytracer/shapes/Mesh.h"
 #include "raytracer/Ray.h"
 #include "raytracer/Vec3.h"
 

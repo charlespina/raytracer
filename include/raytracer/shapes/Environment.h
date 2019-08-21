@@ -1,14 +1,14 @@
 #ifndef RT_ENVIRONMENT_H_
 #define RT_ENVIRONMENT_H_
 
-#include "raytracer/objects/IObject.h"
-#include "raytracer/objects/InvertedObject.h"
-#include "raytracer/objects/Sphere.h"
+#include "raytracer/shapes/Shape.h"
+#include "raytracer/shapes/InvertedObject.h"
+#include "raytracer/shapes/Sphere.h"
 #include "raytracer/materials.h"
 
 namespace raytracer {
 
-class Environment : public IObject {
+class Environment : public Shape {
 public:
   Environment(std::shared_ptr<Texture> texture) {
     float sufficiently_large_size = 100000.0f;
@@ -30,7 +30,7 @@ public:
   }
 
 public:
-  std::shared_ptr<IObject> _object;
+  std::shared_ptr<Shape> _object;
 };
 
 } // namespace

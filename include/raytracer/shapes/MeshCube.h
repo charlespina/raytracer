@@ -1,8 +1,8 @@
 #ifndef RT_MESHCUBE_H_
 #define RT_MESHCUBE_H_
 
-#include "raytracer/objects/IObject.h"
-#include "raytracer/objects/Mesh.h"
+#include "raytracer/shapes/Shape.h"
+#include "raytracer/shapes/Mesh.h"
 
 namespace raytracer {
 

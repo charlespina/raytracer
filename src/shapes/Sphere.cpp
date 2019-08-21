@@ -1,4 +1,4 @@
-#include "raytracer/objects/Sphere.h"
+#include "raytracer/shapes/Sphere.h"
 #include "raytracer/math.h"
 
 namespace raytracer {

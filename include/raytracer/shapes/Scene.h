@@ -3,8 +3,8 @@
 
 #include "raytracer/Camera.h"
 #include "raytracer/HitRecord.h"
-#include "raytracer/objects/IObject.h"
-#include "raytracer/objects/Group.h"
+#include "raytracer/shapes/Shape.h"
+#include "raytracer/shapes/Group.h"
 #include "raytracer/textures.h"
 #include <vector>
 

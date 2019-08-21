@@ -2,16 +2,16 @@
 #define RT_GROUP_H_
 
 #include <vector>
-#include "raytracer/objects/IObject.h"
+#include "raytracer/shapes/Shape.h"
 
 namespace raytracer {
 
-class Group : public IObject {
+class Group : public Shape {
 public:
   bool hit(const Ray& r, float tmin, float tmax, HitRecord &record) const override;
   bool bounding_box(float t0, float t1, AxisAlignedBoundingBox& aabb) const override;
 
-  void add_object(std::shared_ptr<IObject> object) {
+  void add_object(std::shared_ptr<Shape> object) {
     _children.push_back(object);
   }
 
@@ -19,7 +19,7 @@ public:
   Vec3 random(const Vec3 &o) const override;
 
 public:
-  std::vector<std::shared_ptr<IObject>> _children;
+  std::vector<std::shared_ptr<Shape>> _children;
 };
 
 } // raytracer

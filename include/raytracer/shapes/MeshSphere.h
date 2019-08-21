@@ -1,7 +1,7 @@
 #ifndef RT_MESHSPHERE_H_
 #define RT_MESHSPHERE_H_
 
-#include "raytracer/objects/Mesh.h"
+#include "raytracer/shapes/Mesh.h"
 
 namespace raytracer {
 

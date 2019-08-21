@@ -1,4 +1,4 @@
-#include "raytracer/objects/MeshRectangle.h"
+#include "raytracer/shapes/MeshRectangle.h"
 
 using namespace raytracer;
 

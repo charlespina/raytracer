@@ -1,14 +1,14 @@
-#include "raytracer/objects/BvhNode.h"
+#include "raytracer/shapes/BvhNode.h"
 #include "raytracer/random_numbers.h"
 #include <algorithm>
 #include <functional>
 
 namespace raytracer {
 
-using comparison_fn_t = std::function<bool(const std::shared_ptr<IObject> &, const std::shared_ptr<IObject> &)>;
+using comparison_fn_t = std::function<bool(const std::shared_ptr<Shape> &, const std::shared_ptr<Shape> &)>;
 
 comparison_fn_t box_compare(int axis) {
-  auto fn = [axis](const std::shared_ptr<IObject> &a, const std::shared_ptr<IObject> &b) -> bool {
+  auto fn = [axis](const std::shared_ptr<Shape> &a, const std::shared_ptr<Shape> &b) -> bool {
     AxisAlignedBoundingBox left, right;
     left.setEmpty();
     right.setEmpty();

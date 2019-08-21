@@ -33,16 +33,16 @@ set (SOURCES
     src/AxisAlignedBoundingBox.cpp
     src/Camera.cpp
     src/materials.cpp
-    src/objects/RectXZ.cpp
-    src/objects/BvhNode.cpp
-    src/objects/ConstantMedium.cpp
-    src/objects/Group.cpp
-    src/objects/Mesh.cpp
-    src/objects/MeshRectangle.cpp
-    src/objects/MeshSphere.cpp
-    src/objects/ObjectInstance.cpp
-    src/objects/Plane.cpp
-    src/objects/Sphere.cpp
+    src/shapes/RectXZ.cpp
+    src/shapes/BvhNode.cpp
+    src/shapes/ConstantMedium.cpp
+    src/shapes/Group.cpp
+    src/shapes/Mesh.cpp
+    src/shapes/MeshRectangle.cpp
+    src/shapes/MeshSphere.cpp
+    src/shapes/ShapeInstance.cpp
+    src/shapes/Plane.cpp
+    src/shapes/Sphere.cpp
     src/random_numbers.cpp
     src/pdfs.cpp
     src/Perlin.cpp

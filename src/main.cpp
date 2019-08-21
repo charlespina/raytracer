@@ -14,19 +14,19 @@
 #include "raytracer/Image.h"
 #include "raytracer/materials.h"
 #include "raytracer/multithreading.h"
-#include "raytracer/objects/BvhNode.h"
-#include "raytracer/objects/ConstantMedium.h"
-#include "raytracer/objects/Environment.h"
-#include "raytracer/objects/IObject.h"
-#include "raytracer/objects/InvertedObject.h"
-#include "raytracer/objects/ObjectInstance.h"
-#include "raytracer/objects/Plane.h"
-#include "raytracer/objects/MeshCube.h"
-#include "raytracer/objects/MeshRectangle.h"
-#include "raytracer/objects/MeshSphere.h"
-#include "raytracer/objects/RectXZ.h"
-#include "raytracer/objects/Scene.h"
-#include "raytracer/objects/Sphere.h"
+#include "raytracer/shapes/BvhNode.h"
+#include "raytracer/shapes/ConstantMedium.h"
+#include "raytracer/shapes/Environment.h"
+#include "raytracer/shapes/Shape.h"
+#include "raytracer/shapes/InvertedObject.h"
+#include "raytracer/shapes/ShapeInstance.h"
+#include "raytracer/shapes/Plane.h"
+#include "raytracer/shapes/MeshCube.h"
+#include "raytracer/shapes/MeshRectangle.h"
+#include "raytracer/shapes/MeshSphere.h"
+#include "raytracer/shapes/RectXZ.h"
+#include "raytracer/shapes/Scene.h"
+#include "raytracer/shapes/Sphere.h"
 #include "raytracer/random_numbers.h"
 #include "raytracer/Timer.h"
 #include "raytracer/Perlin.h"
@@ -106,7 +106,7 @@ std::shared_ptr<Camera> create_default_camera(size_t _width, size_t _height) {
   ));
 }
 
-Vec3 raycast(const Ray &r, IObject &world, size_t depth, const Vec3 &miss_color) {
+Vec3 raycast(const Ray &r, Shape &world, size_t depth, const Vec3 &miss_color) {
   HitRecord record;
   if (world.hit(r, 0.001f, std::numeric_limits<float>::max(), record)) {
     ScatterRecord srec;
@@ -138,7 +138,7 @@ Vec3 raycast(const Ray &r, IObject &world, size_t depth, const Vec3 &miss_color)
   }
 }
 
-std::shared_ptr<BvhNode> build_bvh(std::vector<std::shared_ptr<IObject> > geoms, float t0, float t1) {
+std::shared_ptr<BvhNode> build_bvh(std::vector<std::shared_ptr<Shape> > geoms, float t0, float t1) {
   auto copied_geom_list = geoms;
   return std::make_shared<BvhNode>(copied_geom_list.begin(), copied_geom_list.end(), t0, t1);
 }
@@ -262,7 +262,7 @@ std::shared_ptr<Scene> create_nine_sphere_scene() {
 
       Eigen::Affine3f transform = Eigen::Translation3f(center + offset) * Eigen::Affine3f::Identity();
 
-      auto instance = std::make_shared<ObjectInstance>(
+      auto instance = std::make_shared<ShapeInstance>(
         sphere,
         transform
       );
@@ -319,7 +319,7 @@ std::shared_ptr<Scene> create_cornell_box() {
     );
     
     std::shared_ptr<Group> group = std::make_shared<Group>();
-    group->add_object(std::make_shared<ObjectInstance>(rect_mesh, light_tx, light_mat));
+    group->add_object(std::make_shared<ShapeInstance>(rect_mesh, light_tx, light_mat));
     scene->add_object(group);
   }
 
@@ -334,7 +334,7 @@ std::shared_ptr<Scene> create_cornell_box() {
   {
     auto sphere_mesh = std::make_shared<Sphere>(Vec3(0, 0, 0), 1.0f, lambert_red);
     Eigen::Affine3f sphere_tx = Eigen::Translation3f(room_half/4.0f, 1.0f, -2.4f) * Eigen::Affine3f::Identity();
-    scene->create_object<ObjectInstance>(sphere_mesh, sphere_tx);
+    scene->create_object<ShapeInstance>(sphere_mesh, sphere_tx);
   }
 
   // metal sphere
@@ -342,7 +342,7 @@ std::shared_ptr<Scene> create_cornell_box() {
     float sphere_size = 2.0f;
     auto sphere_mesh = std::make_shared<Sphere>(Vec3(0, 0, 0), sphere_size, create_mirror_material());
     Eigen::Affine3f sphere_tx = Eigen::Translation3f(-room_half/2.0f, sphere_size, -2.0f) * Eigen::Affine3f::Identity();
-    scene->create_object<ObjectInstance>(sphere_mesh, sphere_tx);
+    scene->create_object<ShapeInstance>(sphere_mesh, sphere_tx);
   }
 
   // glass sphere
@@ -353,7 +353,7 @@ std::shared_ptr<Scene> create_cornell_box() {
 
     auto sphere_mesh = std::make_shared<Sphere>(Vec3(0, 0, 0), sphere_size, glass_mat);
     Eigen::Affine3f sphere_tx = Eigen::Translation3f(room_half/2.0f, sphere_size + 2.0f, 0) * Eigen::Affine3f::Identity();
-    scene->create_object<ObjectInstance>(sphere_mesh, sphere_tx);
+    scene->create_object<ShapeInstance>(sphere_mesh, sphere_tx);
   }
 
   // cube
@@ -365,7 +365,7 @@ std::shared_ptr<Scene> create_cornell_box() {
       Eigen::AngleAxisf(0.15f * 2.0f * PI, Vec3::UnitY()) *
       Eigen::Scaling(cube_size) *
       Eigen::Affine3f::Identity();
-    scene->create_object<ObjectInstance>(cube,  cube_tx1, lambert_gray);
+    scene->create_object<ShapeInstance>(cube,  cube_tx1, lambert_gray);
 
     Eigen::Affine3f cube_tx2 =
       Eigen::Translation3f(Vec3(-room_half/3, cube_size/4.0f, 1.0f)) *
@@ -373,8 +373,8 @@ std::shared_ptr<Scene> create_cornell_box() {
       Eigen::Scaling(cube_size/2.0f) *
       Eigen::Affine3f::Identity();
 
-    // auto cube_volume = std::make_shared<ObjectInstance>(cube,  cube_tx2);
-    scene->create_object<ObjectInstance>(cube, 
+    // auto cube_volume = std::make_shared<ShapeInstance>(cube,  cube_tx2);
+    scene->create_object<ShapeInstance>(cube, 
       cube_tx2,
       lambert_gray);
   }
@@ -387,27 +387,27 @@ std::shared_ptr<Scene> create_cornell_box() {
   Eigen::Affine3f tx_scale = Eigen::Scaling(room_size) * Eigen::Affine3f::Identity();
 
   // ground
-  scene->create_object<ObjectInstance>(wall, tx_scale);
+  scene->create_object<ShapeInstance>(wall, tx_scale);
 
   if (1)
   {
 
     // side wall
-    scene->create_object<ObjectInstance>(wall,
+    scene->create_object<ShapeInstance>(wall,
       Eigen::Translation3f(Vec3(-room_half, room_half, 0)) * Eigen::AngleAxisf(-PI / 2, Vec3::UnitZ()) * tx_scale,
       lambert_red);
 
     // side wall
-    scene->create_object<ObjectInstance>(wall,
+    scene->create_object<ShapeInstance>(wall,
       Eigen::Translation3f(Vec3(room_half, room_half, 0)) * Eigen::AngleAxisf(PI / 2, Vec3::UnitZ()) * tx_scale,
       lambert_green);
 
     // ceiling
-    scene->create_object<ObjectInstance>(wall,
+    scene->create_object<ShapeInstance>(wall,
       Eigen::Translation3f(Vec3(0, room_size, 0)) * Eigen::AngleAxisf(-PI, Vec3::UnitZ()) * tx_scale);
 
     // rear wall
-    scene->create_object<ObjectInstance>(wall,
+    scene->create_object<ShapeInstance>(wall,
       Eigen::Translation3f(Vec3(0, room_half, -room_half)) * Eigen::AngleAxisf(PI/2, Vec3::UnitX()) * tx_scale);
   }
 
