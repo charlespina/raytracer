@@ -38,7 +38,7 @@ Vec3 Sphere::center(float t) const {
   return _center + _velocity * t;
 }
 
-bool Sphere::hit(const Ray& r, float t_min, float t_max, HitRecord &record) const {
+bool Sphere::hit(const Ray& r, float t_min, float t_max, SurfaceInteraction &record) const {
   Vec3 p_center = center(r.time());
   Vec3 oc = r.origin() - p_center;
   float a = dot(r.direction(), r.direction());

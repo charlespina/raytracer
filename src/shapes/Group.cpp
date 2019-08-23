@@ -3,10 +3,10 @@
 
 using namespace raytracer;
 
-bool Group::hit(const Ray& r, float t_min, float t_max, HitRecord &record) const {
+bool Group::hit(const Ray& r, float t_min, float t_max, SurfaceInteraction &record) const {
   bool hit_anything = false;
   float closest_so_far = t_max;
-  HitRecord temp_record;
+  SurfaceInteraction temp_record;
   for (const auto &geom : _children) {
     if (geom->hit(r, t_min, closest_so_far, temp_record)) {
       hit_anything = true;

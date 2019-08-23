@@ -12,7 +12,7 @@ public:
 
   ShapeInstance(std::shared_ptr<Shape> hitable, const Eigen::Affine3f &transform, std::shared_ptr<Material> mat=nullptr);
   virtual ~ShapeInstance() {}
-  virtual bool hit(const Ray& r, float t_min, float t_max, HitRecord &record) const override;
+  virtual bool hit(const Ray& r, float t_min, float t_max, SurfaceInteraction &record) const override;
   virtual bool bounding_box(float t0, float t1, AxisAlignedBoundingBox& aabb) const override;
 
   void set_transform(const Eigen::Affine3f &transform);

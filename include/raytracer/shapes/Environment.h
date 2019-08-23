@@ -21,7 +21,7 @@ public:
 
   virtual ~Environment() {}
 
-  bool hit(const Ray& r, float t_min, float t_max, HitRecord &record) const override {
+  bool hit(const Ray& r, float t_min, float t_max, SurfaceInteraction &record) const override {
     return _object->hit(r, t_min, t_max, record);
   }
 

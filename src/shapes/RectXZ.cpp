@@ -13,7 +13,7 @@ RectXZ::RectXZ(float width, float height, std::shared_ptr<Material> mat)
 {
 }
 
-bool RectXZ::hit(const Ray& r, float t_min, float t_max, HitRecord &record) const {
+bool RectXZ::hit(const Ray& r, float t_min, float t_max, SurfaceInteraction &record) const {
   float y = 0;
   float t = (y - r.origin().y()) / r.direction().y();
   if (t < t_min || t > t_max)

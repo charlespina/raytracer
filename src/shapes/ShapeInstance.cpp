@@ -18,7 +18,7 @@ void ShapeInstance::set_transform(const Eigen::Affine3f &transform) {
   _matrices->_inverse_normal_matrix = _matrices->_inverse_transform.linear().inverse().transpose();
 }
 
-bool ShapeInstance::hit(const Ray &r, float t_min, float t_max, HitRecord &record) const {
+bool ShapeInstance::hit(const Ray &r, float t_min, float t_max, SurfaceInteraction &record) const {
   // transform ray to object space, since hit function is not aware of instance transform
   Vec3 o = _matrices->_inverse_transform * r.origin();
   Vec3 d = (_matrices->_inverse_normal_matrix * r.direction()).normalized();

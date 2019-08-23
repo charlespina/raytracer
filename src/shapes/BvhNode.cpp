@@ -48,10 +48,10 @@ BvhNode::BvhNode(BvhNode::iterator_t list_begin, BvhNode::iterator_t list_end, f
   _aabb = box_left.merged(box_right);
 }
 
-bool BvhNode::hit(const Ray& r, float t_min, float t_max, HitRecord &record) const {
+bool BvhNode::hit(const Ray& r, float t_min, float t_max, SurfaceInteraction &record) const {
   if (!aabb_hit(_aabb, r, t_min, t_max)) return false;
 
-  HitRecord left_hit, right_hit;
+  SurfaceInteraction left_hit, right_hit;
   bool is_left_hit = _left->hit(r, t_min, t_max, left_hit);
   bool is_right_hit = _right->hit(r, t_min, t_max, right_hit);
   if (is_left_hit && is_right_hit) {

@@ -10,7 +10,6 @@
 #include "stb/stb_image_write.h"
 
 #include "raytracer/Camera.h"
-#include "raytracer/HitRecord.h"
 #include "raytracer/Image.h"
 #include "raytracer/integrators/BasicIntegrator.h"
 #include "raytracer/materials/materials.h"

@@ -9,7 +9,7 @@ class InvertedObject : public Shape {
 public:
   InvertedObject(std::shared_ptr<Shape> object) : _object(object) {}
 
-  bool hit(const Ray& r, float t_min, float t_max, HitRecord &record) const override {
+  bool hit(const Ray& r, float t_min, float t_max, SurfaceInteraction &record) const override {
     bool result = _object->hit(r, t_min, t_max, record);
     if (result) {
       record.normal = -record.normal;

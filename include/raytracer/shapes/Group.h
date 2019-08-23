@@ -8,7 +8,7 @@ namespace raytracer {
 
 class Group : public Shape {
 public:
-  bool hit(const Ray& r, float tmin, float tmax, HitRecord &record) const override;
+  bool hit(const Ray& r, float tmin, float tmax, SurfaceInteraction &record) const override;
   bool bounding_box(float t0, float t1, AxisAlignedBoundingBox& aabb) const override;
 
   void add_object(std::shared_ptr<Shape> object) {

@@ -53,19 +53,18 @@ void BasicIntegrator::render(const Scene &scene) {
 }
 
 Vec3 BasicIntegrator::Li(const Ray &r, Shape &world, size_t depth) {
-  HitRecord record;
-  if (world.hit(r, 0.001f, std::numeric_limits<float>::max(), record)) {
-    ScatterRecord srec;
-    Vec3 emitted = record.material->emit(r, record);
-    if (depth < _max_ray_depth && record.material->scatter(r, record, srec)) {
-      if (srec._is_specular) {
-        return (srec._attenuation.array() * Li(srec._specular_ray, world, depth + 1).array()).matrix();
+  SurfaceInteraction isect;
+  if (world.hit(r, 0.001f, std::numeric_limits<float>::max(), isect)) {
+    Vec3 emitted = isect.material->emit(r, isect);
+    if (depth < _max_ray_depth && isect.material->scatter(r, isect)) {
+      if (isect.is_specular) {
+        return (isect.attenuation.array() * Li({isect.p, isect.wo, r.time()}, world, depth + 1).array()).matrix();
       }
 
       // ObjectPDF plight(light_shape, record.p);
       // MixturePDF pdf(&plight, srec.pdf.get());
-      PDF &pdf = *srec._pdf;
-      Ray scattered = Ray(record.p, pdf.generate(), r.time());
+      PDF &pdf = *isect.pdf;
+      Ray scattered = Ray(isect.p, pdf.generate(), r.time());
       float pdf_val = pdf.value(scattered.direction());
 
       // debug:
@@ -73,7 +72,7 @@ Vec3 BasicIntegrator::Li(const Ray &r, Shape &world, size_t depth) {
       return emitted + 
         // record.material->scatter_pdf(r, record, scattered) *
         (
-          srec._attenuation.array() *
+          isect.attenuation.array() *
           Li(scattered, world, depth+1).array()
         ).matrix()
         ;// / pdf_val;

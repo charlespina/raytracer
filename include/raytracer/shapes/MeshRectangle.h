@@ -16,7 +16,7 @@ public:
   virtual ~MeshRectangle() {}
 
   float pdf_value(const Vec3 &o, const Vec3 &v) const override {
-    HitRecord record;
+    SurfaceInteraction record;
     if (this->hit(Ray(o, v, 0), 0.001f, std::numeric_limits<float>::max(), record)) {
       float area = _aabb.min().cross(_aabb.max()).norm();
       float distance_squared = record.t * record.t * v.squaredNorm();
