@@ -1,7 +1,7 @@
 #ifndef RT_MESH_H
 #define RT_MESH_H
 
-#include "raytracer/materials.h"
+#include "raytracer/materials/materials.h"
 #include "raytracer/shapes/Shape.h"
 #include "raytracer/shapes/Plane.h"
 #include "raytracer/Vec3.h"

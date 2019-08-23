@@ -1,7 +1,7 @@
 #ifndef RT_CONSTANTMEDIUM_H_
 #define RT_CONSTANTMEDIUM_H_
 
-#include "raytracer/textures.h"
+#include "raytracer/textures/textures.h"
 #include "raytracer/shapes/Shape.h"
 
 namespace raytracer {

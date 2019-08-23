@@ -4,8 +4,8 @@
 #include "raytracer/HitRecord.h"
 #include "raytracer/random_numbers.h"
 #include "raytracer/Ray.h"
-#include "raytracer/pdfs.h"
-#include "raytracer/textures.h"
+#include "raytracer/materials/pdfs.h"
+#include "raytracer/textures/textures.h"
 #include <memory>
 
 namespace raytracer {

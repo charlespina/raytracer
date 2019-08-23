@@ -1,4 +1,4 @@
-#include "raytracer/pdfs.h"
+#include "raytracer/materials/pdfs.h"
 
 using namespace raytracer;
 

@@ -2,7 +2,7 @@
 #define RT_RECTANGLE_H
 
 #include "raytracer/AxisAlignedBoundingBox.h"
-#include "raytracer/materials.h"
+#include "raytracer/materials/materials.h"
 #include "raytracer/shapes/Shape.h"
 #include "raytracer/shapes/Mesh.h"
 #include "raytracer/Ray.h"

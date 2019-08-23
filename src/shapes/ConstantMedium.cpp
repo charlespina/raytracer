@@ -1,5 +1,5 @@
 #include "raytracer/shapes/ConstantMedium.h"
-#include "raytracer/materials.h"
+#include "raytracer/materials/materials.h"
 
 using namespace raytracer;
 

@@ -32,7 +32,8 @@ include_directories (
 set (SOURCES
     src/AxisAlignedBoundingBox.cpp
     src/Camera.cpp
-    src/materials.cpp
+    src/materials/materials.cpp
+    src/materials/pdfs.cpp
     src/shapes/RectXZ.cpp
     src/shapes/BvhNode.cpp
     src/shapes/ConstantMedium.cpp
@@ -43,11 +44,10 @@ set (SOURCES
     src/shapes/ShapeInstance.cpp
     src/shapes/Plane.cpp
     src/shapes/Sphere.cpp
-    src/random_numbers.cpp
-    src/pdfs.cpp
     src/Perlin.cpp
+    src/random_numbers.cpp
     src/Ray.cpp
-    src/textures.cpp
+    src/textures/textures.cpp
 )
 
 # static library containing our module

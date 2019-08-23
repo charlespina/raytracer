@@ -1,4 +1,4 @@
-#include "raytracer/materials.h"
+#include "raytracer/materials/materials.h"
 #include "raytracer/OrthoNormalBasis.h"
 
 namespace raytracer {

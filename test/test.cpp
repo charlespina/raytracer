@@ -5,7 +5,7 @@
 #include "raytracer/Image.h"
 #include "raytracer/shapes/BvhNode.h"
 #include "raytracer/shapes/Sphere.h"
-#include "raytracer/textures.h"
+#include "raytracer/textures/textures.h"
 #include "raytracer/Vec3.h"
 
 #define STB_IMAGE_IMPLEMENTATION

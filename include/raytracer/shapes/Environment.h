@@ -4,7 +4,7 @@
 #include "raytracer/shapes/Shape.h"
 #include "raytracer/shapes/InvertedObject.h"
 #include "raytracer/shapes/Sphere.h"
-#include "raytracer/materials.h"
+#include "raytracer/materials/materials.h"
 
 namespace raytracer {
 

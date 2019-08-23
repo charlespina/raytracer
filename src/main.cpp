@@ -12,8 +12,9 @@
 #include "raytracer/Camera.h"
 #include "raytracer/HitRecord.h"
 #include "raytracer/Image.h"
-#include "raytracer/materials.h"
+#include "raytracer/materials/materials.h"
 #include "raytracer/multithreading.h"
+#include "raytracer/Scene.h"
 #include "raytracer/shapes/BvhNode.h"
 #include "raytracer/shapes/ConstantMedium.h"
 #include "raytracer/shapes/Environment.h"
@@ -25,7 +26,6 @@
 #include "raytracer/shapes/MeshRectangle.h"
 #include "raytracer/shapes/MeshSphere.h"
 #include "raytracer/shapes/RectXZ.h"
-#include "raytracer/shapes/Scene.h"
 #include "raytracer/shapes/Sphere.h"
 #include "raytracer/random_numbers.h"
 #include "raytracer/Timer.h"
@@ -87,7 +87,7 @@ struct Config {
   size_t image_width = 300;
   size_t image_height = 300;
   size_t max_bounces = 8;
-  size_t samples_per_pixel = 100;
+  size_t samples_per_pixel = 10;
 } config;
 
 Vec3 normal_to_color(const Vec3 &n) {

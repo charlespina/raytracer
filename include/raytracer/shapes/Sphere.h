@@ -4,7 +4,7 @@
 #include <memory>
 
 #include "raytracer/HitRecord.h"
-#include "raytracer/materials.h"
+#include "raytracer/materials/materials.h"
 #include "raytracer/shapes/Shape.h"
 #include "raytracer/Ray.h"
 #include "raytracer/Vec3.h"
