@@ -32,6 +32,7 @@ include_directories (
 set (SOURCES
     src/AxisAlignedBoundingBox.cpp
     src/Camera.cpp
+    src/integrators/BasicIntegrator.cpp
     src/materials/materials.cpp
     src/materials/pdfs.cpp
     src/shapes/RectXZ.cpp
