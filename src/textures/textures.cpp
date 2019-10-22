@@ -1,4 +1,4 @@
-#include "raytracer/textures.h"
+#include "raytracer/textures/textures.h"
 
 namespace raytracer {
 

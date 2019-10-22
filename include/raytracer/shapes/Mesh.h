@@ -1,7 +1,7 @@
 #ifndef RT_MESH_H
 #define RT_MESH_H
 
-#include "raytracer/materials.h"
+#include "raytracer/materials/materials.h"
 #include "raytracer/shapes/Shape.h"
 #include "raytracer/shapes/Plane.h"
 #include "raytracer/Vec3.h"
@@ -38,7 +38,7 @@ public:
   Mesh(const std::vector<Vec3> &vertex_triplets);
   virtual ~Mesh() {}
 
-  virtual bool hit(const Ray& r, float t_min, float t_max, HitRecord &record) const override;
+  virtual bool hit(const Ray& r, float t_min, float t_max, SurfaceInteraction &record) const override;
   virtual bool bounding_box(float t0, float t1, AxisAlignedBoundingBox& aabb) const override;
 
   inline const Vec3 & get_face_vertex(size_t face_index, size_t vertex_offset) const {

@@ -10,10 +10,10 @@
 #include "stb/stb_image_write.h"
 
 #include "raytracer/Camera.h"
-#include "raytracer/HitRecord.h"
 #include "raytracer/Image.h"
-#include "raytracer/materials.h"
-#include "raytracer/multithreading.h"
+#include "raytracer/integrators/BasicIntegrator.h"
+#include "raytracer/materials/materials.h"
+#include "raytracer/Scene.h"
 #include "raytracer/shapes/BvhNode.h"
 #include "raytracer/shapes/ConstantMedium.h"
 #include "raytracer/shapes/Environment.h"
@@ -25,7 +25,6 @@
 #include "raytracer/shapes/MeshRectangle.h"
 #include "raytracer/shapes/MeshSphere.h"
 #include "raytracer/shapes/RectXZ.h"
-#include "raytracer/shapes/Scene.h"
 #include "raytracer/shapes/Sphere.h"
 #include "raytracer/random_numbers.h"
 #include "raytracer/Timer.h"
@@ -87,7 +86,7 @@ struct Config {
   size_t image_width = 300;
   size_t image_height = 300;
   size_t max_bounces = 8;
-  size_t samples_per_pixel = 100;
+  size_t samples_per_pixel = 10;
 } config;
 
 Vec3 normal_to_color(const Vec3 &n) {
@@ -104,43 +103,6 @@ std::shared_ptr<Camera> create_default_camera(size_t _width, size_t _height) {
     0.0f, // aperture
     2.75f // focus dist
   ));
-}
-
-Vec3 raycast(const Ray &r, Shape &world, size_t depth, const Vec3 &miss_color) {
-  HitRecord record;
-  if (world.hit(r, 0.001f, std::numeric_limits<float>::max(), record)) {
-    ScatterRecord srec;
-    Vec3 emitted = record.material->emit(r, record);
-    if (depth < config.max_bounces && record.material->scatter(r, record, srec)) {
-      if (srec._is_specular) {
-        return (srec._attenuation.array() * raycast(srec._specular_ray, world, depth + 1, miss_color).array()).matrix();
-      }
-
-      // ObjectPDF plight(light_shape, record.p);
-      // MixturePDF pdf(&plight, srec.pdf.get());
-      PDF &pdf = *srec._pdf;
-      Ray scattered = Ray(record.p, pdf.generate(), r.time());
-      float pdf_val = pdf.value(scattered.direction());
-
-      // debug:
-      // return normal_to_color(record.normal);
-      return emitted + 
-        // record.material->scatter_pdf(r, record, scattered) *
-        (
-          srec._attenuation.array() *
-          raycast(scattered, world, depth+1, miss_color).array()
-        ).matrix()
-        ;// / pdf_val;
-    }
-    return emitted;
-  } else {
-    return miss_color;
-  }
-}
-
-std::shared_ptr<BvhNode> build_bvh(std::vector<std::shared_ptr<Shape> > geoms, float t0, float t1) {
-  auto copied_geom_list = geoms;
-  return std::make_shared<BvhNode>(copied_geom_list.begin(), copied_geom_list.end(), t0, t1);
 }
 
 std::shared_ptr<Scene> create_single_sphere_scene() {
@@ -416,46 +378,33 @@ int main(int argc, char **argv) {
   // commas in numeric output
   std::cout.imbue(std::locale(""));
 
-  Image<float> img(config.image_width, config.image_height);
+  std::shared_ptr<Image<float>> img = std::make_shared<Image<float>>(config.image_width, config.image_height);
   
   auto scene = create_cornell_box();
-  if (!scene->_camera) scene->_camera = create_default_camera(img._width, img._height);
+  if (!scene->_camera) scene->_camera = create_default_camera(img->_width, img->_height);
 
   float t_begin = 0.0f;
   float t_end = 0.0f;
-  auto bvh = build_bvh(scene->_children, t_begin, t_end);
  
   {
     Timer render = Timer("render time");
-    RT_FOR((size_t)0, img._width, [=, &img, &scene](size_t x) {
-      for (size_t y = 0; y < img._height; y++) {
-        Vec3 color(0, 0, 0);
-        
-        for (size_t sample=0; sample < config.samples_per_pixel; sample++) {
-          float u = float(x + random_number()) / float(img._width);
-          float v = float(y + random_number()) / float(img._height);
-        
-          Ray r = scene->_camera->get_ray(u, v, t_begin, t_end);
-          color += replace_nan(raycast(r, *bvh.get(), 0, scene->_background_color));
-        }
-        
-        color /= float(config.samples_per_pixel);
 
-        // a little y-flip
-        img.set(x, img._height - y - 1, color);
-      }
-    });
+    BasicIntegrator integrator(img, 
+      config.samples_per_pixel, 
+      config.max_bounces,
+      t_begin, t_end);
+    integrator.render(*scene);
 
     std::cout << "ray count: " << Ray::_ray_count << " rays" << std::endl;
   }
 
   // convert to output format
-  Image<uint8_t> img_out(img._width, img._height);
+  Image<uint8_t> img_out(img->_width, img->_height);
   {
-    RT_FOR(size_t(0), img._width, [&img, &img_out](size_t x) {
+    for(size_t x = 0; x < img->_width; x++) {
       Vec3 v_out;
-      for (size_t y = 0; y < img._height; y++) {
-        img.get(x, y, v_out);
+      for (size_t y = 0; y < img->_height; y++) {
+        img->get(x, y, v_out);
 
         // tonemap
         v_out[0] = std::min(1.0f, sqrtf(v_out.x()));
@@ -471,7 +420,7 @@ int main(int argc, char **argv) {
           (uint8_t)v_out.z()
         );
       }
-    });
+    }
   }
 
   stbi_write_png("./out.png", 

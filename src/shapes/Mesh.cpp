@@ -24,7 +24,7 @@ Mesh::Mesh(const std::vector<Vec3> &vertex_triplets) {
   }
 }
 
-bool Mesh::hit(const Ray& r, float t_min, float t_max, HitRecord &record) const {
+bool Mesh::hit(const Ray& r, float t_min, float t_max, SurfaceInteraction &record) const {
   float closest_t = std::numeric_limits<float>::max();
   bool did_hit = false;
 

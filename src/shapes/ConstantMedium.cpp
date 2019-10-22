@@ -1,5 +1,5 @@
 #include "raytracer/shapes/ConstantMedium.h"
-#include "raytracer/materials.h"
+#include "raytracer/materials/materials.h"
 
 using namespace raytracer;
 
@@ -10,8 +10,8 @@ ConstantMedium::ConstantMedium(std::shared_ptr<Shape> object, float density, std
   _material = std::make_shared<Isotropic>(albedo);
 }
 
-bool ConstantMedium::hit(const Ray& r, float t_min, float t_max, HitRecord &record) const {
-  HitRecord hita, hitb;
+bool ConstantMedium::hit(const Ray& r, float t_min, float t_max, SurfaceInteraction &record) const {
+  SurfaceInteraction hita, hitb;
   if (!_object->hit(r, std::numeric_limits<float>::lowest(), std::numeric_limits<float>::max(), hita))
     return false;
   if (!_object->hit(r, hita.t + 0.0001f, std::numeric_limits<float>::max(), hitb))

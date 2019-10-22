@@ -9,7 +9,7 @@ Plane::Plane(const Vec3 &position, const Vec3 &normal, std::shared_ptr<Material>
 , _material(material)
 {}
 
-bool Plane::hit(const Ray& r, float t_min, float t_max, HitRecord &record) const {
+bool Plane::hit(const Ray& r, float t_min, float t_max, SurfaceInteraction &record) const {
   float rdn = dot(_normal, r.direction());
 
   if (abs(rdn) < std::numeric_limits<float>::epsilon()) return false;

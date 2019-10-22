@@ -2,7 +2,6 @@
 #define RT_PDFS_H_
 
 #include "raytracer/math.h"
-#include "raytracer/shapes/Shape.h"
 #include "raytracer/OrthoNormalBasis.h"
 #include "raytracer/random_numbers.h"
 #include "raytracer/Vec3.h"
@@ -23,24 +22,6 @@ public:
 
 public:
   OrthoNormalBasis _basis;
-};
-
-class ObjectPDF : public PDF {
-public:
-  ObjectPDF(std::shared_ptr<Shape> obj, const Vec3 &origin) : _origin(origin), _object(obj) {}
-
-  float value(const Vec3 &dir) const override {
-    return _object->pdf_value(_origin, dir);
-  }
-
-  Vec3 generate() const override {
-    return _object->random(_origin);
-  }
-
-public:
-  Vec3 _origin;
-  std::shared_ptr<Shape> _object;
-
 };
 
 class MixturePDF : public PDF {

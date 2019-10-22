@@ -2,10 +2,8 @@
 #define RT_SCENE_H
 
 #include "raytracer/Camera.h"
-#include "raytracer/HitRecord.h"
-#include "raytracer/shapes/Shape.h"
 #include "raytracer/shapes/Group.h"
-#include "raytracer/textures.h"
+#include "raytracer/textures/textures.h"
 #include <vector>
 
 namespace raytracer {

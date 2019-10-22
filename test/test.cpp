@@ -5,7 +5,7 @@
 #include "raytracer/Image.h"
 #include "raytracer/shapes/BvhNode.h"
 #include "raytracer/shapes/Sphere.h"
-#include "raytracer/textures.h"
+#include "raytracer/textures/textures.h"
 #include "raytracer/Vec3.h"
 
 #define STB_IMAGE_IMPLEMENTATION
@@ -115,7 +115,7 @@ TEST_CASE("bvh hit tests", "[bvh][ray]") {
   BvhNode bvh(scene.begin(), scene.end(), 0, 0);
 
   Ray r(Vec3(0, -3.0f, 0), Vec3(0, 1, 0), 0);
-  HitRecord hit;
+  SurfaceInteraction hit;
   bool hit_sphere = scene[0]->hit(r, 0, std::numeric_limits<float>::max(), hit);
   REQUIRE(hit_sphere);
 
