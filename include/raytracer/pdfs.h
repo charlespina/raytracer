@@ -33,7 +33,7 @@ public:
     return _object->pdf_value(_origin, dir);
   }
 
-  Vec3 generate() const {
+  Vec3 generate() const override {
     return _object->random(_origin);
   }
 

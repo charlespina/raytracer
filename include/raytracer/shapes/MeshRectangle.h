@@ -26,7 +26,7 @@ public:
     return 0;
   }
 
-  Vec3 random(const Vec3 &o) const {
+  Vec3 random(const Vec3 &o) const override {
     Vec3 delta = _aabb.max() - _aabb.min();
     Vec3 random_point = Vec3(random_number() * delta.x(), random_number() * delta.y(), random_number() * delta.z()) + _aabb.min();
     return random_point - o;

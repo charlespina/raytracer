@@ -297,12 +297,10 @@ std::shared_ptr<Scene> create_cornell_box() {
   auto lambert_green = std::make_shared<Lambertian>(Vec3(0.12f, 0.45f, 0.15f));
 
   float rect_size = room_size;
-  float rect_half = rect_size/2.0f;
 
   // light
   {
     float light_size = 2.5f;
-    float light_half = light_size/2.0f;
     float light_distance = 0.0f; // room_half/2.0f - light_size;
     float light_height = room_size - 0.001f;
 
