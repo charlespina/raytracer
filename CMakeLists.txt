@@ -1,6 +1,5 @@
 cmake_minimum_required(VERSION 3.13)
 
-
 project (raytracer)
 set (PROJECT_LIB ${PROJECT_NAME}_lib)
 set (MAIN_EXE ${PROJECT_NAME})
